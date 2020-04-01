@@ -1,2 +1,4 @@
 ^telprep\.Rproj$
 ^\.Rproj\.user$
+^doc$
+^Meta$

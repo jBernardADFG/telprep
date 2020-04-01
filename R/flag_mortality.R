@@ -1,4 +1,0 @@
-
-flag.mortality <- function(){
-
-}

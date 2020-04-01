@@ -1,12 +1,14 @@
 Package: telprep
-Title: Insert title
-Version: 0.0
-Authors@R: 
-    person(given = "Jordy",
+Title: Process telemetry data
+Version: 0.1
+Authors@R: person(given = "Jordy",
            family = "Bernard",
            role = c("aut", "cre"),
            email = "jordy.bernard@alaska.gov")
-Description: Insert description
+Description: Insert description.
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
+Imports: rlist
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
