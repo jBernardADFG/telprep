@@ -1,8 +1,9 @@
-#' Modify a date if it was programmed incorrectly
+#' replace.date
 #'
+#' Modify a date if it was programmed incorrectly
 #' @param data data.frame output from read.flight.folder
-#' @param new_date String representation of the replacement date. The date should be formatted as \%m/\%d/\%y" eg: 12/25/20.
-#' @return insert info
+#' @param new_date String representation of the replacement date. The date should be formatted as \%m/\%d/\%y" (eg: 12/25/20).
+#' @return Returns the input data.frame with modified dates.
 #' @export
 
 replace.date <- function(data, new_date){

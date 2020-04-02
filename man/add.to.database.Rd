@@ -2,7 +2,7 @@
 % Please edit documentation in R/addToDatabase.R
 \name{add.to.database}
 \alias{add.to.database}
-\title{Insert something}
+\title{add.to.data.database}
 \usage{
 add.to.database(database, add_df)
 }
@@ -11,9 +11,6 @@ add.to.database(database, add_df)
 
 \item{add_df}{The data.frame to add to the database}
 }
-\value{
-Insert something
-}
 \description{
-Insert something
+Add the contents of a file to a database
 }

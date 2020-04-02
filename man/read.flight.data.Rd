@@ -2,7 +2,7 @@
 % Please edit documentation in R/readFlightData.R
 \name{read.flight.data}
 \alias{read.flight.data}
-\title{Read telemetry flight txt files into R}
+\title{read.flight.data}
 \usage{
 read.flight.data(folder_path, remove_999 = T, mort_sig = T)
 }
@@ -14,7 +14,7 @@ read.flight.data(folder_path, remove_999 = T, mort_sig = T)
 \item{mort_sig}{When Tag IDs > 100 signal mortality, use mort_sig=T. Use mort_sig=F otherwise.}
 }
 \value{
-Returns a list of data.frames containing the raw data from each file in the folder.
+Returns a list of data.frames containing the raw data from each file in the folder. To see how the data is organized use names().
 }
 \description{
 Read telemetry flight txt files into R

@@ -2,18 +2,18 @@
 % Please edit documentation in R/flagDeadFish.R
 \name{flag.dead.fish}
 \alias{flag.dead.fish}
-\title{Determine the best detections and flag for false detections}
+\title{flag.dead.fish}
 \usage{
-flag.dead.fish(bd, dist_thresh = 10)
+flag.dead.fish(best_detects, dist_thresh = 10)
 }
 \arguments{
-\item{bd}{A data.frame containing the raw data from telemetry flights. Detects will generally be the output of combine.data}
+\item{best_detects}{A best detection data.frame. best_detects will generally be output from get.best.locations}
 
-\item{dist_thresh}{Add an attribute to get.best.locations and remove this argument}
+\item{dist_thresh}{Basically, if a fish moves less than dist_thresh km for all consecutive detection periods following the detection, the fish will be flagged as dead. Geodesic distance is currently used.}
 }
 \value{
-Insert something
+Returns a data.frame where $MortFlag=T if a fish has been flagged as dead.
 }
 \description{
-Insert Something
+A recursive algorithm is used to determine whether or not a fish is alive.
 }

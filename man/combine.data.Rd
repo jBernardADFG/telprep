@@ -2,7 +2,7 @@
 % Please edit documentation in R/combineData.R
 \name{combine.data}
 \alias{combine.data}
-\title{Combine the raw data across telemetry flights}
+\title{combine.data}
 \usage{
 combine.data(df_list, source_vec)
 }
@@ -15,5 +15,5 @@ combine.data(df_list, source_vec)
 Returns a dataframe containing the merged data. The data will be ordered by detection time.
 }
 \description{
-Combine the raw data across telemetry flights
+Combine the raw data between receivers and telemetry flights
 }

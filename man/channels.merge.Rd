@@ -2,7 +2,7 @@
 % Please edit documentation in R/mergeChannels.R
 \name{channels.merge}
 \alias{channels.merge}
-\title{Modify a channel if it was programmed incorrectly}
+\title{channels.merge}
 \usage{
 channels.merge(data, replace, with)
 }
@@ -14,7 +14,7 @@ channels.merge(data, replace, with)
 \item{with}{The replacement channel}
 }
 \value{
-
+Returns the input data.frame with a modified channel
 }
 \description{
 Modify a channel if it was programmed incorrectly

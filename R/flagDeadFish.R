@@ -1,18 +1,19 @@
-#' Determine the best detections and flag for false detections
+#' flag.dead.fish
 #'
-#' @description Insert Something
-#' @param bd A data.frame containing the raw data from telemetry flights. Detects will generally be the output of combine.data
-#' @param dist_thresh Add an attribute to get.best.locations and remove this argument
-#' @return Insert something
+#' A recursive algorithm is used to determine whether or not a fish is alive.
+#'
+#' @param best_detects A best detection data.frame. best_detects will generally be output from get.best.locations
+#' @param dist_thresh  Basically, if a fish moves less than dist_thresh km for all consecutive detection periods following the detection, the fish will be flagged as dead. Geodesic distance is currently used.
+#' @return Returns a data.frame where $MortFlag=T if a fish has been flagged as dead.
 #' @export
 
-flag.dead.fish <- function(bd, dist_thresh=10){
-  allchannels <- sort(unique(bd$Channel))
-  alltags <- sort(unique(bd$TagID))
+flag.dead.fish <- function(best_detects, dist_thresh=10){
+  allchannels <- sort(unique(best_detects$Channel))
+  alltags <- sort(unique(best_detects$TagID))
   new_dets <- data.frame()
   for(channelsi in allchannels) {
     for(tagsi in alltags) {
-      dets <- bd[bd$Channel==channelsi & bd$TagID==tagsi,]
+      dets <- best_detects[best_detects$Channel==channelsi & best_detects$TagID==tagsi,]
       if (nrow(dets)>=1){
         dets <- dets[order(dets$DateTime,decreasing=T),]
         dets$MoveDist <- NA

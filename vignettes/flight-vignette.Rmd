@@ -1,5 +1,5 @@
 ---
-title: "Put the title of your vignette here"
+title: "Processing flight data tutorial"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Put the title of your vignette here}
@@ -9,24 +9,94 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(telprep)
+library(rlist)
 ```
 
-## R Markdown
+This vignette will show you how the telprep package works and how it can be used to process data from telemetry flights. The program is designed to read in raw data, filter out erroneous signals, and help determine the living status of fish.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+### Program Workflow:
 
-```{r cars}
-summary(cars)
+* Step 1 -- Read the raw data into R 
+* Step 2 -- If channels or dates were misprogrammed, make corrections
+* Step 3 -- Combine the contents of the data in the folder 
+* Step 4 -- Determine the best locations and flag false detections
+* Step 5 -- Determine the living status of the fish
+* Step 6 -- Add the results to an existing database
+
+
+### Step 1 -- Read the raw data into R
+To use the telprep package, stick the telemetry flight txt files that you want to process into a folder. You can name the files however you choose; however, the names should be recognizable as they will be used later on. Find the path of the folder on your system and use the following lines of code to read the data into R:
+
+```{r}
+folder_path <- "D:/Jordy/telprep/telprep2/data/" # Use your folder path here
+raw_data <- read.flight.data(folder_path, remove_999 = T, mort_sig = T)
+```
+All of the data in the folder has been imported into R. To see how the data is organized, play around with the following lines of code:
+```{r}
+head(names(raw_data))
+head(raw_data[[2]])
+```
+Here, names(raw_data) tells you how the raw data is ordered in the list. Because "tburb_f1_1-26-19-WING.TXT" is listed 2nd, raw_data[[2]] displays the data from this file.  
+
+
+### Step 2 -- If channels or dates were misprogrammed, make corrections
+If a channel or date was misprogrammed, it needs to be corrected before the raw data is combined. We will suppose that channel 3 was misprogrammed as channel 10 in "tburb_f1_1-26-19-WING.TXT". The following lines will make the correction:
+
+```{r}
+raw_data[[2]] <- channels.merge(raw_data[[2]], 10, 3) # see help(merge_channels)
+head(raw_data[[2]])
+```
+If a date was misprogramed, use the code
+```{r}
+head(raw_data[[16]]) # 2003 ?
+raw_data[[16]] <- replace.date(raw_data[[16]], new_date ="04/25/19") # see help(replace.date)?
+head(raw_data[[16]])
 ```
 
-## Including Plots
+### Step 3 -- Combine the contents of the data in the folder
+The next step is to combine the contents of the data using the function combine.data. Before combining the file contents, the source of the file must be determined (i.e. was the receiver on the belly or wing of the aircraft). To combine the contents into a variable named all_data, run the following lines:
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+head(names(raw_data)) # to determine source_vec
+source_vec <- c(rep(c("belly","wing"), 10), rep(c("wing","belly"),2), c("belly","wing"))
+all_data <- combine.data(raw_data, source_vec) # See help(combine.data)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### Step 4 -- Determine the best locations and flag false detections
+Now that the raw data has been combined, the best location will be determined and erroneous detections will be flagged using the function get.best.locations:
+```{r message=FALSE}
+best_locations <- get.best.locations(all_data, bin_by = 1, n_thresh = 5, dist_max = 10, remove_flagged = F) # See help(process_data)
+all_detects <- best_locations$all_detects
+best_detects <- best_locations$best_detects
+```
+```{r}
+head(all_detects)
+head(best_detects)
+```
+Here, all_detects adds some useful to all_data:  all_detects\$BestSignal is the signal with the highest power in a detection period, all_detects\$Dist is the geodesic distance (in km) between the detection location and the associated highest power detection, and all_detects\$Records is number of times that a fish was detected in a detection period. The argument bin_by can be used to adjust the length of the detection period. 
+
+best_detects contains the highest power detections. A best detection will be flagged if there are fewer than n_thresh other detections within a distance of dist_max km from the best detection during the detection period. The best detection will also be flagged if a negative linear relationship does not exist between all_detects\$Power and all_detects\$Dist for all detections within dist_max km from the best signal in the detection period. This information is summarized in best_detects. To remove the flagged detection, set removed_flagged=T.
+
+### Step 5 -- Determine the living status of the fish
+To flag for dead fish run the following lines of code:
+```{r}
+best_detects <- best_detects[!best_detects$flag,] # To remove the flagged fish
+flagged_fish <- flag.dead.fish(best_detects, dist_thresh = 5) # To flag for mortality
+head(flagged_fish)
+```
+Here, a recursive algorithm is used to determine whether or not a fish is alive. Basically, if a fish moves less than dist_thresh km for all consecutive detection periods following the detection, the fish will be flagged as dead. Geodesic distance is currently used to screen for dead fish.
+
+### Step 6 -- Add the results to an existing database
+To add the results to an existing database, find the filepath of your database and run the code
+```{r}
+# filepath <- "D:/Jordy/telprep/telprep2/data/database.csv"
+# add.to.database(filepath, flagged_fish)
+```
+
+
+
+
+
+

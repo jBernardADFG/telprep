@@ -2,7 +2,7 @@
 % Please edit documentation in R/getBestLocations.R
 \name{get.best.locations}
 \alias{get.best.locations}
-\title{Determine the best detections and flag for false detections}
+\title{get.best.locations}
 \usage{
 get.best.locations(
   detects,
@@ -17,15 +17,18 @@ get.best.locations(
 
 \item{bin_by}{Specifies the length (in days) of the detection periods. If bin_by=2, the best location will be found for each fish in two day bins.}
 
-\item{n_thresh}{Argument used to flag for false detections.}
+\item{n_thresh}{Numerical argument to flag for false detections. See discription.}
 
-\item{dist_max}{Argument used to flag for false detections.}
+\item{dist_max}{Numerical argument to flag for false detections. See discription.}
 
 \item{remove_flagged}{If remove_flagged=T, the flagged detections will be removed in the returned data.frame.}
 }
 \value{
-Returns a list containing two data.frames. $all_detects contains... $best_detects contains...
+Returns a list containing two data.frames. $all_detects adds some useful to all_data:  $all_detects\$BestSignal is the signal with the highest power in a detection period, $all_detects\$Dist is the geodesic distance (in km) between the detection location and the associated highest power detection, and $all_detects\$Records is number of times that a fish was detected in a detection period. $best_detects contains the highest power detections. $best_detects$Flag indicates if a detection has been flagged as erroneous.
 }
 \description{
-Insert Something
+The best location is considered to be the location where the highest power detection occurred. The best location will be flagged if there are fewer than n_thresh detections within a distance of dist_max km from the best detection during the detection period. The best location will also be flagged if a negative linear relationship does not exist between the signal strength and the distance to the highest powere detection for all detections within dist_max km from the best signal in the detection period.
+}
+\details{
+Determine the highest power location and flag erroneous detections
 }

@@ -2,17 +2,17 @@
 % Please edit documentation in R/replaceDate.R
 \name{replace.date}
 \alias{replace.date}
-\title{Modify a date if it was programmed incorrectly}
+\title{replace.date}
 \usage{
 replace.date(data, new_date)
 }
 \arguments{
 \item{data}{data.frame output from read.flight.folder}
 
-\item{new_date}{String representation of the replacement date. The date should be formatted as \%m/\%d/\%y" eg: 12/25/20.}
+\item{new_date}{String representation of the replacement date. The date should be formatted as \%m/\%d/\%y" (eg: 12/25/20).}
 }
 \value{
-insert info
+Returns the input data.frame with modified dates.
 }
 \description{
 Modify a date if it was programmed incorrectly

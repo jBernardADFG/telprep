@@ -1,10 +1,11 @@
-# -------------------------------------------------------------------------
+#' read.flight.data
+#'
 #' Read telemetry flight txt files into R
 #'
 #' @param folder_path The path of the folder where the txt files are located.
 #' @param remove_999 Use remove_999=T to remove all 999 tag IDs. Use remove_999=F otherwise.
 #' @param mort_sig When Tag IDs > 100 signal mortality, use mort_sig=T. Use mort_sig=F otherwise.
-#' @return Returns a list of data.frames containing the raw data from each file in the folder.
+#' @return Returns a list of data.frames containing the raw data from each file in the folder. To see how the data is organized use names().
 #' @export
 
 read.flight.data <- function(folder_path, remove_999=T, mort_sig=T){
