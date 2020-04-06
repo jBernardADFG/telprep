@@ -1,6 +1,7 @@
 ---
 title: "Processing flight data tutorial"
 output: rmarkdown::html_vignette
+
 vignette: >
   %\VignetteIndexEntry{Put the title of your vignette here}
   %\VignetteEngine{knitr::rmarkdown}
