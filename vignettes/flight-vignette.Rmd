@@ -29,14 +29,11 @@ This vignette will show you how the telprep package works and how it can be used
 ### Step 1 -- Read the raw data into R
 To use the telprep package, stick the telemetry flight txt files that you want to process into a folder. You can name the files however you choose; however, the names should be recognizable as they will be used later on. Find the path of the folder on your system and use the following lines of code to read the data into R:
 
-```{r eval=FALSE}
+```{r echo=TRUE}
 folder_path <- "D:/Jordy/telprep/telprep2/data/" # Use your folder path here
 raw_data <- read.flight.data(folder_path, remove_999 = T, mort_sig = T)
 ```
 
-```{r include=FALSE}
-load("raw_data")
-```
 
 All of the data in the folder has been imported into R. To see how the data is organized, play around with the following lines of code:
 ```{r}
