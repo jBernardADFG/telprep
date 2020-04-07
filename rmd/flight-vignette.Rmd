@@ -1,0 +1,101 @@
+---
+title: "flight-vignette"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(telprep)
+library(rlist)
+```
+
+This vignette will show you how the telprep package can be used to automatically process data from telemetry flights. The program is designed to read in raw txt files, filter out erroneous signals, and determine the living status of fish. This tutorial is designed to highlight the general workflow of the program. For a more detailed description of the program functionalities, see the help files for the following functions: read.flight.data, channels.merge, replace.date, combine.data, get.best.locations, flag.dead.fish, and add.to.database.
+
+
+### Program Workflow:
+* Step 1 -- Read raw data into R 
+* Step 2 -- If channels or dates were misprogrammed, make corrections
+* Step 3 -- Combine the folder contents 
+* Step 4 -- Determine the best locations and flag for erroneous signals
+* Step 5 -- Determine the living status of the fish
+* Step 6 -- Add the results to an existing database
+
+
+### Step 1 -- Read raw data into R
+Begin by sticking the raw txt files into a folder. Txt files from multiple flights can be added to the folder. The names should be easily recognized as they will be used later on. Find the path of the folder (on my system, the path is D:/Jordy/telprep/telprep2/data/) and use the read.flight.data function to read the relevant information into R:
+
+```{r}
+folder_path <- "C:/Users/19708/Desktop/data/"
+raw_data <- read.flight.data(folder_path) # call help("read.flight.data") for a more detailed description of the function the associated arguments
+```
+The raw data is now stored in the variable raw_data. To see how it is organized, call
+```{r}
+names(raw_data)
+```
+Here, "tburb_f1_1-26-19-WING.TXT" is listed 2nd. To see the data from this file, call raw_data[[2]].  
+
+### Step 2 -- If channels or dates were misprogrammed, make corrections
+If a channel or date was misprogrammed, it needs to be corrected before the raw data is combined. As an example, we will suppose that channel 3 was misprogrammed as channel 10 in "tburb_f1_1-26-19-WING.TXT". To peek at the data we can call
+```{r}
+head(raw_data[[2]])
+```
+We can fix the misprogrammed channel with the following line of code:
+```{r}
+raw_data[[2]] <- channels.merge(raw_data[[2]], 10, 3)
+head(raw_data[[2]])
+```
+
+We will now suppose that a date was misprogrammed in the file "tburb_f5_10-17-19-WING.TXT". To peek at the data, we call 
+```{r}
+head(raw_data[[16]])
+```
+If the correct date flight date was "04/25/19", the following line of code will make the correction:
+```{r}
+raw_data[[16]] <- replace.date(raw_data[[16]], new_date ="04/25/19") 
+head(raw_data[[16]])
+```
+
+### Step 3 -- Combine the contents of the data in the folder
+The function combine.data combines the data in raw_data into a single data.frame. An argument (source_vec) is provided so that the source of each txt file can be specified (i.e. does the txt file come from a receiver on the belly or the wing of the aircraft). Because 26 txt files were contained in the example folder ("C:/Users/19708/Desktop/data/"), a vector of length 26 is needed to incode this information. To determine the source of each data.frame in raw_data, we can call names(raw_data) to assist in the construction of source_vec:
+
+```{r}
+names(raw_data)
+source_vec <- c(rep(c("belly","wing"), 10), rep(c("wing","belly"),2), c("belly","wing"))
+source_vec
+```
+Now that the source of the data has been specified, we can use the function combine.data to combine the contents of raw_data:
+
+```{r}
+all_data <- combine.data(raw_data, source_vec)
+head(all_data)
+```
+
+
+### Step 4: Determine the best locations and flag for erroneous signals
+The best location will now be determined and erroneous detections will be flagged using the function get.best.locations:
+```{r}
+best_locations <- get.best.locations(all_data, bin_by = 1, n_thresh = 5, dist_max = 10, remove_flagged = F)
+head(best_locations$all_detects)
+head(best_locations$best_detects)
+```
+best_locations\$all_detects adds some useful to all_data:  BestSignal is the signal with the highest power in a detection period, Dist is the geodesic distance (in km) between the detection location and the associated highest power detection, and Records is number of times that a fish was detected in a detection period. The argument bin_by can be used to adjust the length of the detection period. bin_by defaults to one day detection periods. 
+
+all_detects\$best_detects contains the highest power detections only. A best detection will be flagged if there are fewer than n_thresh detections within a distance of dist_max km from the best detection during the detection period. The best detection will also be flagged if a positive linear relationship exists between Power and Dist for all detections within dist_max km from the best signal in the detection period (i.e. the signal strength increases as the best detection is approached). This information is summarized in best_detects. To remove the flagged detection in all_detects\$best_detects, set removed_flagged=T.
+
+### Step 5 -- Determine the living status of the fish
+The function flag.dead.fish can be used to determine the living status of fish: 
+
+```{r}
+best_detects <- best_locations$best_detects
+best_detects <- best_detects[!best_detects$flag,] # To remove the flagged fish
+flagged_fish <- flag.dead.fish(best_detects, dist_thresh = 5)
+tail(flagged_fish)
+```
+Here, a recursive algorithm is used to make the determination. Basically, if a fish moves less than dist_thresh km for all consecutive detection periods following a detection, the fish will be flagged as dead. Geodesic distance is currently used to screen for dead fish, and mortality signal information is not taken into account -- be sure to download the latest package version as updates will be made.
+
+### Step 6 -- Add the results to an existing database
+To add the results to an existing database, find the filepath of your database and run the code
+```{r}
+# filepath <- "C:/Users/19708/Desktop/database.csv"
+# add.to.database(filepath, flagged_fish)
+```
