@@ -6,6 +6,7 @@
 #' @param lat2 Numerical argument -- the latitude of the second coordinate location
 #' @param units The geodesic distance will be computed in terms of these units -- Defaults to km
 #' @return Returns the geodesic distance between two coordinate locations
+#' @export
 
 get.geo.dist = function(long1, lat1, long2, lat2, units = "km") {
   longlat1 = purrr::map2(long1, lat1, function(x,y) c(x,y))
