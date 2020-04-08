@@ -366,7 +366,7 @@ summary {
 </div>
 
 
-<p>This vignette will show you how the telprep package can be used to automatically process data from telemetry flights. The program is designed to read in raw txt files, filter out erroneous signals, and determine the living status of fish. This tutorial is designed to highlight the general workflow of the program. For a more detailed description of the program functionalities, see the help files for the following functions: read.flight.data, channels.merge, replace.date, combine.data, get.best.locations, flag.dead.fish, and add.to.database.</p>
+<p>This vignette will show you how the telprep package can be used to automatically process data from telemetry flights. The program is designed to read in raw txt files, filter out erroneous signals, and determine the living status of fish. This tutorial is designed to highlight the general workflow of the program. For a more detailed description of the program functionalities, see the help files for the following functions: read.flight.data, channels.merge, replace.date, combine.data, get.date.bins, get.best.locations, flag.dead.fish, and add.to.database.</p>
 <div id="program-workflow" class="section level3">
 <h3>Program Workflow:</h3>
 <ul>
@@ -380,10 +380,10 @@ summary {
 </div>
 <div id="step-1-read-raw-data-into-r" class="section level3">
 <h3>Step 1 – Read raw data into R</h3>
-<p>Begin by sticking the raw txt files into a folder. Txt files from multiple flights can be added to the folder. The names should be easily recognized as they will be used later on. Find the path of the folder (on my system, the path is D:/Jordy/telprep/telprep2/data/) and use the read.flight.data function to read the relevant information into R:</p>
+<p>Begin by sticking the raw txt files into a folder. Txt files from multiple flights can be added to the folder. The names should be easily recognized as they will be used later on. It may be helpful to specify the flight grouping, flight date, and the receiver location in the file names for quick reference later on (eg f1_1-26-19_BELLY.TXT). Find the path of the folder (on my system, the path is D:/Jordy/telprep/telprep2/data/) and use the read.flight.data function to read the relevant information into R:</p>
 <pre class="r"><code>folder_path &lt;- &quot;C:/Users/19708/Desktop/data/&quot;
-raw_data &lt;- read.flight.data(folder_path) # call help(&quot;read.flight.data&quot;) for a more detailed description of the function the associated arguments</code></pre>
-<p>The raw data is now stored in the variable raw_data. To see how it is organized, call</p>
+raw_data &lt;- read.flight.data(folder_path)</code></pre>
+<p>The raw data is now stored in the variable raw_data. The following line of code can be run to see how the data is organized internally:</p>
 <pre class="r"><code>names(raw_data)</code></pre>
 <pre><code>##  [1] &quot;tburb_f1_1-26-19-BELLY.TXT&quot;                      
 ##  [2] &quot;tburb_f1_1-26-19-WING.TXT&quot;                       
@@ -411,11 +411,11 @@ raw_data &lt;- read.flight.data(folder_path) # call help(&quot;read.flight.data&
 ## [24] &quot;tburb_f7_Jan-20-AG-2ndFL-RIGHT ANTENNA-BELLY.TXT&quot;
 ## [25] &quot;tburb_f8_Feb-20-BELLY.TXT&quot;                       
 ## [26] &quot;tburb_f8_Feb-20-WING.TXT&quot;</code></pre>
-<p>Here, “tburb_f1_1-26-19-WING.TXT” is listed 2nd. To see the data from this file, call raw_data[[2]].</p>
+<p>Here, “tburb_f1_1-26-19-WING.TXT” is listed 2nd. To see the data from this file, run raw_data[[2]].</p>
 </div>
 <div id="step-2-if-channels-or-dates-were-misprogrammed-make-corrections" class="section level3">
 <h3>Step 2 – If channels or dates were misprogrammed, make corrections</h3>
-<p>If a channel or date was misprogrammed, it needs to be corrected before the raw data is combined. As an example, we will suppose that channel 3 was misprogrammed as channel 10 in “tburb_f1_1-26-19-WING.TXT”. To peek at the data we can call</p>
+<p>If a channel or date was misprogrammed, it needs to be corrected before the raw data is combined. As an example, we will suppose that channel 3 was misprogrammed as channel 10 in “tburb_f1_1-26-19-WING.TXT”. To peek at the data we can run</p>
 <pre class="r"><code>head(raw_data[[2]])</code></pre>
 <pre><code>##              DateTime Channel TagID Antenna Power Latitude Longitude Status
 ## 1 2019-01-25 14:10:48      35    80     AH0   120 64.86179 -147.7410 Active
@@ -424,7 +424,7 @@ raw_data &lt;- read.flight.data(folder_path) # call help(&quot;read.flight.data&
 ## 5 2019-01-26 09:30:46      10    42     AH0   129 64.76004 -147.7546   Mort
 ## 6 2019-01-26 09:30:58      10    42     AH0    97 64.75712 -147.7425   Mort
 ## 7 2019-01-26 09:31:10      10    42     AH0    61 64.75407 -147.7304   Mort</code></pre>
-<p>We can fix the misprogrammed channel with the following line of code:</p>
+<p>The misprogrammed channel will be fixed with the following line of code:</p>
 <pre class="r"><code>raw_data[[2]] &lt;- channels.merge(raw_data[[2]], 10, 3)
 head(raw_data[[2]])</code></pre>
 <pre><code>##              DateTime Channel TagID Antenna Power Latitude Longitude Status
@@ -434,7 +434,7 @@ head(raw_data[[2]])</code></pre>
 ## 5 2019-01-26 09:30:46       3    42     AH0   129 64.76004 -147.7546   Mort
 ## 6 2019-01-26 09:30:58       3    42     AH0    97 64.75712 -147.7425   Mort
 ## 7 2019-01-26 09:31:10       3    42     AH0    61 64.75407 -147.7304   Mort</code></pre>
-<p>We will now suppose that a date was misprogrammed in the file “tburb_f5_10-17-19-WING.TXT”. To peek at the data, we call</p>
+<p>We will now suppose that a date was misprogrammed in the file “tburb_f5_10-17-19-WING.TXT” and the file “tburb_f5_10-7-19-WING.TXT”. To peek at the data, run</p>
 <pre class="r"><code>head(raw_data[[16]])</code></pre>
 <pre><code>##               DateTime Channel TagID Antenna Power Latitude Longitude Status
 ## 1  2003-04-25 08:14:11      40    30      A0    49 64.86199 -147.7411 Active
@@ -443,20 +443,37 @@ head(raw_data[[2]])</code></pre>
 ## 7  2003-04-25 08:14:24      40    25      A0    49 64.86197 -147.7411 Active
 ## 11 2003-04-25 08:14:32      40    57      A0    49 64.86196 -147.7411   Mort
 ## 12 2003-04-25 08:14:33      40    31      A0    69 64.86196 -147.7411 Active</code></pre>
-<p>If the correct date flight date was “04/25/19”, the following line of code will make the correction:</p>
-<pre class="r"><code>raw_data[[16]] &lt;- replace.date(raw_data[[16]], new_date =&quot;04/25/19&quot;) 
+<pre class="r"><code>head(raw_data[[18]])</code></pre>
+<pre><code>##                DateTime Channel TagID Antenna Power Latitude Longitude Status
+## 649 2003-04-10 08:40:43      34    80      A0    68 64.86179 -147.7414 Active
+## 650 2003-04-17 03:14:02      10     2      A0    62 64.81752 -147.9170 Active
+## 651 2003-04-17 03:14:02      10     2      A0    56 64.81754 -147.9169 Active
+## 652 2003-04-17 03:14:03      10     1      A0    61 64.81757 -147.9169 Active
+## 653 2003-04-17 03:14:04      10     1      A0    52 64.81757 -147.9169 Active
+## 654 2003-04-17 03:14:04      10     1      A0    44 64.81757 -147.9169 Active</code></pre>
+<p>If the correct flights dates were “10/17/19” and “10/7/19”, the following lines of code will make the corrections:</p>
+<pre class="r"><code>raw_data[[16]] &lt;- replace.date(raw_data[[16]], new_date =&quot;10/17/19&quot;) 
 head(raw_data[[16]])</code></pre>
 <pre><code>##               DateTime Channel TagID Antenna Power Latitude Longitude Status
-## 1  2019-04-25 08:14:11      40    30      A0    49 64.86199 -147.7411 Active
-## 3  2019-04-25 08:14:21      40    26      A0    65 64.86197 -147.7411 Active
-## 5  2019-04-25 08:14:23      40    30      A0    52 64.86197 -147.7411 Active
-## 7  2019-04-25 08:14:24      40    25      A0    49 64.86197 -147.7411 Active
-## 11 2019-04-25 08:14:32      40    57      A0    49 64.86196 -147.7411   Mort
-## 12 2019-04-25 08:14:33      40    31      A0    69 64.86196 -147.7411 Active</code></pre>
+## 1  2019-10-17 08:14:11      40    30      A0    49 64.86199 -147.7411 Active
+## 3  2019-10-17 08:14:21      40    26      A0    65 64.86197 -147.7411 Active
+## 5  2019-10-17 08:14:23      40    30      A0    52 64.86197 -147.7411 Active
+## 7  2019-10-17 08:14:24      40    25      A0    49 64.86197 -147.7411 Active
+## 11 2019-10-17 08:14:32      40    57      A0    49 64.86196 -147.7411   Mort
+## 12 2019-10-17 08:14:33      40    31      A0    69 64.86196 -147.7411 Active</code></pre>
+<pre class="r"><code>raw_data[[18]] &lt;- replace.date(raw_data[[18]], new_date =&quot;10/7/19&quot;) 
+head(raw_data[[18]])</code></pre>
+<pre><code>##                DateTime Channel TagID Antenna Power Latitude Longitude Status
+## 649 2019-10-07 08:40:43      34    80      A0    68 64.86179 -147.7414 Active
+## 650 2019-10-07 03:14:02      10     2      A0    62 64.81752 -147.9170 Active
+## 651 2019-10-07 03:14:02      10     2      A0    56 64.81754 -147.9169 Active
+## 652 2019-10-07 03:14:03      10     1      A0    61 64.81757 -147.9169 Active
+## 653 2019-10-07 03:14:04      10     1      A0    52 64.81757 -147.9169 Active
+## 654 2019-10-07 03:14:04      10     1      A0    44 64.81757 -147.9169 Active</code></pre>
 </div>
 <div id="step-3-combine-the-contents-of-the-data-in-the-folder" class="section level3">
 <h3>Step 3 – Combine the contents of the data in the folder</h3>
-<p>The function combine.data combines the data in raw_data into a single data.frame. An argument (source_vec) is provided so that the source of each txt file can be specified (i.e. does the txt file come from a receiver on the belly or the wing of the aircraft). Because 26 txt files were contained in the example folder (“C:/Users/19708/Desktop/data/”), a vector of length 26 is needed to incode this information. To determine the source of each data.frame in raw_data, we can call names(raw_data) to assist in the construction of source_vec:</p>
+<p>The function combine.data combines the data in raw_data into a single data.frame. An argument (source_vec) is provided so that the source of each txt file can be specified (i.e. does the txt file come from a receiver on the belly or the wing of the aircraft). Because 26 txt files were contained in the example folder (“C:/Users/19708/Desktop/data/”), a vector of length 26 is needed to incode this information. To determine the source of each data.frame in raw_data, we can run names(raw_data) to assist in the construction of source_vec:</p>
 <pre class="r"><code>names(raw_data)</code></pre>
 <pre><code>##  [1] &quot;tburb_f1_1-26-19-BELLY.TXT&quot;                      
 ##  [2] &quot;tburb_f1_1-26-19-WING.TXT&quot;                       
@@ -492,90 +509,98 @@ source_vec</code></pre>
 <p>Now that the source of the data has been specified, we can use the function combine.data to combine the contents of raw_data:</p>
 <pre class="r"><code>all_data &lt;- combine.data(raw_data, source_vec)
 head(all_data)</code></pre>
-<pre><code>##                  DateTime Channel TagID Antenna Power Latitude Longitude Status
-## 6498  2003-04-10 08:40:43      34    80      A0    68 64.86179 -147.7414 Active
-## 65010 2003-04-17 03:14:02      10     2      A0    62 64.81752 -147.9170 Active
-## 65114 2003-04-17 03:14:02      10     2      A0    56 64.81754 -147.9169 Active
-## 65211 2003-04-17 03:14:03      10     1      A0    61 64.81757 -147.9169 Active
-## 6539  2003-04-17 03:14:04      10     1      A0    52 64.81757 -147.9169 Active
-## 65410 2003-04-17 03:14:04      10     1      A0    44 64.81757 -147.9169 Active
-##       Source
-## 6498    wing
-## 65010   wing
-## 65114   wing
-## 65211   wing
-## 6539    wing
-## 65410   wing</code></pre>
+<pre><code>##                 DateTime Channel TagID Antenna Power Latitude Longitude Status
+## 1100 2019-01-25 14:10:48      35    80     AH0   120 64.86179 -147.7410 Active
+## 1391 2019-01-25 14:10:48      35    80     AH0   120 64.86179 -147.7410 Active
+## 1    2019-01-26 09:15:01      63    19     AH0    43 64.79225 -147.9022 Active
+## 1390 2019-01-26 09:15:01      63    19     AH0    43 64.79225 -147.9022 Active
+## 2    2019-01-26 09:15:03      63    74     AH0    42 64.79193 -147.9005 Active
+## 2100 2019-01-26 09:15:03      63    74     AH0    42 64.79193 -147.9005 Active
+##      Source
+## 1100   wing
+## 1391   wing
+## 1     belly
+## 1390  belly
+## 2     belly
+## 2100  belly</code></pre>
 </div>
 <div id="step-4-determine-the-best-locations-and-flag-for-erroneous-signals" class="section level3">
 <h3>Step 4: Determine the best locations and flag for erroneous signals</h3>
-<p>The best location will now be determined and erroneous detections will be flagged using the function get.best.locations:</p>
-<pre class="r"><code>best_locations &lt;- get.best.locations(all_data, bin_by = 1, n_thresh = 5, dist_max = 10, remove_flagged = F)</code></pre>
-<pre><code>## [1] &quot;Be patient -- this could take a few minutes&quot;
-## [1] 0.03
-## [1] 0.06
-## [1] 0.09
-## [1] 0.12
-## [1] 0.15
-## [1] 0.18
-## [1] 0.21
-## [1] 0.24
-## [1] 0.27
-## [1] 0.3
-## [1] 0.33
-## [1] 0.36
-## [1] 0.39
-## [1] 0.42
-## [1] 0.45
-## [1] 0.48
-## [1] 0.52
-## [1] 0.55
-## [1] 0.58
-## [1] 0.61
-## [1] 0.64
-## [1] 0.67
-## [1] 0.7
-## [1] 0.73
-## [1] 0.76
-## [1] 0.79
-## [1] 0.82
-## [1] 0.85
-## [1] 0.88
-## [1] 0.91
-## [1] 0.94
-## [1] 0.97
-## [1] 1</code></pre>
+<p>The best location will now be determined and erroneous detections will be flagged using the function get.best.locations. In short, the best location is considered to be the location where the highest power detection occurred for each fish in each detection period. Two arguments can be used to specify the detection periods: date_bins allows the user to manually specify each detection period whereas bin_by allows the user to specify the length (in days) of the detection period. An overview of the manual approach is provided here.</p>
+<p>To assist in the construction date_bins, we can run the following line of code to look up the flight grouping:</p>
+<pre class="r"><code>names(raw_data)</code></pre>
+<pre><code>##  [1] &quot;tburb_f1_1-26-19-BELLY.TXT&quot;                      
+##  [2] &quot;tburb_f1_1-26-19-WING.TXT&quot;                       
+##  [3] &quot;tburb_f1_1-27-19-BELLY.TXT&quot;                      
+##  [4] &quot;tburb_f1_1-27-19-WING.TXT&quot;                       
+##  [5] &quot;tburb_f2_2-6-19-BELLY.TXT&quot;                       
+##  [6] &quot;tburb_f2_2-6-19-WING.TXT&quot;                        
+##  [7] &quot;tburb_f2_2-7-19-BELLY.TXT&quot;                       
+##  [8] &quot;tburb_f2_2-7-19-WING.TXT&quot;                        
+##  [9] &quot;tburb_f3_5-19-19-BELLY.TXT&quot;                      
+## [10] &quot;tburb_f3_5-19-19-WING.TXT&quot;                       
+## [11] &quot;tburb_f3_5-20-19-BELLY.TXT&quot;                      
+## [12] &quot;tburb_f3_5-20-19-WING.TXT&quot;                       
+## [13] &quot;tburb_f4_July-19-BELLY.TXT&quot;                      
+## [14] &quot;tburb_f4_July-19-WING.TXT&quot;                       
+## [15] &quot;tburb_f5_10-17-19-BELLY.TXT&quot;                     
+## [16] &quot;tburb_f5_10-17-19-WING.TXT&quot;                      
+## [17] &quot;tburb_f5_10-7-19-BELLY.TXT&quot;                      
+## [18] &quot;tburb_f5_10-7-19-WING.TXT&quot;                       
+## [19] &quot;tburb_f6_Dec-19-BELLY.TXT&quot;                       
+## [20] &quot;tburb_f6_Dec-19-WING.TXT&quot;                        
+## [21] &quot;tburb_f7_Jan-20-AG-1stFL-LEFT ANTENNA-WING.TXT&quot;  
+## [22] &quot;tburb_f7_Jan-20-AG-1stFL-RIGHT ANTENNA-BELLY.TXT&quot;
+## [23] &quot;tburb_f7_Jan-20-AG-2ndFL-LEFT ANTENNA-WING.TXT&quot;  
+## [24] &quot;tburb_f7_Jan-20-AG-2ndFL-RIGHT ANTENNA-BELLY.TXT&quot;
+## [25] &quot;tburb_f8_Feb-20-BELLY.TXT&quot;                       
+## [26] &quot;tburb_f8_Feb-20-WING.TXT&quot;</code></pre>
+<p>After constructing a vector flight_group to incode the flight grouping, we can used the function get.date.bins to get the appropriate detection periods.</p>
+<pre class="r"><code>flight_group &lt;- c(1,1,1,1,2,2,2,2,3,3,3,3,4,4,5,5,5,5,6,6,7,7,7,7,8,8)
+date_bins &lt;- get.date.bins(raw_data, flight_group)
+date_bins</code></pre>
+<pre><code>##      [,1]       [,2]      
+## [1,] &quot;01/25/19&quot; &quot;01/27/19&quot;
+## [2,] &quot;01/28/19&quot; &quot;02/07/19&quot;
+## [3,] &quot;05/19/19&quot; &quot;05/24/19&quot;
+## [4,] &quot;07/24/19&quot; &quot;07/27/19&quot;
+## [5,] &quot;08/05/19&quot; &quot;10/17/19&quot;
+## [6,] &quot;12/16/19&quot; &quot;12/18/19&quot;
+## [7,] &quot;01/15/20&quot; &quot;01/21/20&quot;
+## [8,] &quot;02/05/20&quot; &quot;02/08/20&quot;</code></pre>
+<p>Now, we use the function get.best.locations to determine the best locations and flag for false detections:</p>
+<pre class="r"><code>best_locations &lt;- get.best.locations(all_data, date_bins =  date_bins, bin_by=NA, n_thresh = 5, dist_max = 10, remove_flagged = F)</code></pre>
 <pre class="r"><code>head(best_locations$all_detects)</code></pre>
-<pre><code>##                  DateTime Channel TagID Antenna Power Latitude Longitude Status
-## 6498  2003-04-10 08:40:43      34    80      A0    68 64.86179 -147.7414 Active
-## 65010 2003-04-17 03:14:02      10     2      A0    62 64.81752 -147.9170 Active
-## 65114 2003-04-17 03:14:02      10     2      A0    56 64.81754 -147.9169 Active
-## 65211 2003-04-17 03:14:03      10     1      A0    61 64.81757 -147.9169 Active
-## 6539  2003-04-17 03:14:04      10     1      A0    52 64.81757 -147.9169 Active
-## 65410 2003-04-17 03:14:04      10     1      A0    44 64.81757 -147.9169 Active
-##       Source BestSignal   Dist Records
-## 6498    wing       TRUE  0.000       1
-## 65010   wing      FALSE 11.829     102
-## 65114   wing      FALSE 11.827     102
-## 65211   wing      FALSE  8.965     107
-## 6539    wing      FALSE  8.965     107
-## 65410   wing      FALSE  8.965     107</code></pre>
+<pre><code>##                 DateTime Channel TagID Antenna Power Latitude Longitude Status
+## 1100 2019-01-25 14:10:48      35    80     AH0   120 64.86179 -147.7410 Active
+## 1391 2019-01-25 14:10:48      35    80     AH0   120 64.86179 -147.7410 Active
+## 1    2019-01-26 09:15:01      63    19     AH0    43 64.79225 -147.9022 Active
+## 1390 2019-01-26 09:15:01      63    19     AH0    43 64.79225 -147.9022 Active
+## 2    2019-01-26 09:15:03      63    74     AH0    42 64.79193 -147.9005 Active
+## 2100 2019-01-26 09:15:03      63    74     AH0    42 64.79193 -147.9005 Active
+##      Source BestSignal FlightNum    Dist Records
+## 1100   wing       TRUE         1   0.000       2
+## 1391   wing      FALSE         1   0.000       2
+## 1     belly       TRUE         1   0.000       2
+## 1390  belly      FALSE         1   0.000       2
+## 2     belly      FALSE         1 326.146       4
+## 2100  belly      FALSE         1 326.146       4</code></pre>
 <pre class="r"><code>head(best_locations$best_detects)</code></pre>
-<pre><code>##                  DateTime Channel TagID Power Latitude Longitude Status Source
-## 6498  2003-04-10 08:40:43      34    80    68 64.86179 -147.7414 Active   wing
-## 6885  2003-04-17 03:16:09      22    12    51 64.80855 -147.9275 Active   wing
-## 7255  2003-04-17 03:18:16      10    50    50 64.79336 -147.8298 Active   wing
-## 7339  2003-04-17 03:18:37      34     4    41 64.79435 -147.8052 Active   wing
-## 76112 2003-04-17 03:19:08      22     6    69 64.79181 -147.7695 Active   wing
-## 7634  2003-04-17 03:19:12      34    18    72 64.79109 -147.7632 Active   wing
-##       Records flag
-## 6498        1 TRUE
-## 6885        1 TRUE
-## 7255        1 TRUE
-## 7339        1 TRUE
-## 76112       1 TRUE
-## 7634        2 TRUE</code></pre>
-<p>best_locations$all_detects adds some useful to all_data: BestSignal is the signal with the highest power in a detection period, Dist is the geodesic distance (in km) between the detection location and the associated highest power detection, and Records is number of times that a fish was detected in a detection period. The argument bin_by can be used to adjust the length of the detection period. bin_by defaults to one day detection periods.</p>
+<pre><code>##                 DateTime Channel TagID Power Latitude Longitude Status Source
+## 1100 2019-01-25 14:10:48      35    80   120 64.86179 -147.7410 Active   wing
+## 1    2019-01-26 09:15:01      63    19    43 64.79225 -147.9022 Active  belly
+## 8    2019-01-26 09:15:52      63     3    46 64.78241 -147.8543 Active  belly
+## 39   2019-01-26 09:22:46      63    29    46 64.66917 -147.4123 Active  belly
+## 40   2019-01-26 09:22:47      63    15    46 64.66881 -147.4111 Active  belly
+## 41   2019-01-26 09:22:48      63    16    41 64.66845 -147.4100   Mort  belly
+##      FlightNum Records flag
+## 1100         1       2 TRUE
+## 1            1       2 TRUE
+## 8            1       4 TRUE
+## 39           1       4 TRUE
+## 40           1       2 TRUE
+## 41           1       2 TRUE</code></pre>
+<p>best_locations$all_detects adds some useful to all_data: BestSignal is the signal with the highest power in a detection period, Dist is the geodesic distance (in km) between the detection location and the associated highest power detection, FlightNum is the detection period, and Records is number of times that a fish was detected in a detection period.</p>
 <p>all_detects$best_detects contains the highest power detections only. A best detection will be flagged if there are fewer than n_thresh detections within a distance of dist_max km from the best detection during the detection period. The best detection will also be flagged if a positive linear relationship exists between Power and Dist for all detections within dist_max km from the best signal in the detection period (i.e. the signal strength increases as the best detection is approached). This information is summarized in best_detects. To remove the flagged detection in all_detects$best_detects, set removed_flagged=T.</p>
 </div>
 <div id="step-5-determine-the-living-status-of-the-fish" class="section level3">
@@ -584,21 +609,21 @@ head(all_data)</code></pre>
 <pre class="r"><code>best_detects &lt;- best_locations$best_detects
 best_detects &lt;- best_detects[!best_detects$flag,] # To remove the flagged fish
 flagged_fish &lt;- flag.dead.fish(best_detects, dist_thresh = 5)
-tail(flagged_fish)</code></pre>
-<pre><code>##                   DateTime Channel TagID Power Latitude Longitude Status Source
-## 48642  2020-02-08 14:58:17      80     2    70 64.98108 -148.8772   Mort   wing
-## 49032  2020-02-08 14:59:14      80   182    77 64.98242 -148.8829   Mort   wing
-## 49252  2020-02-08 14:59:46      80     8    66 64.98295 -148.8467   Mort   wing
-## 499110 2020-02-08 15:01:23      80   198    75 64.98773 -148.7470   Mort   wing
-## 50026  2020-02-08 15:01:36      80   168    91 64.98708 -148.7349   Mort   wing
-## 50063  2020-02-08 15:01:39      80    73    92 64.98625 -148.7299   Mort   wing
-##        Records  flag MoveDist MortFlag
-## 48642        6 FALSE       NA       No
-## 49032       12 FALSE       NA       No
-## 49252        6 FALSE       NA       No
-## 499110       7 FALSE       NA       No
-## 50026        8 FALSE       NA       No
-## 50063        6 FALSE       NA       No</code></pre>
+flagged_fish[c(600:605),]</code></pre>
+<pre><code>##                  DateTime Channel TagID Power Latitude Longitude Status Source
+## 25615 2019-10-07 11:29:45      34    75    88 63.71061 -144.3638   Mort  belly
+## 25813 2019-10-07 11:33:22      10    76    74 63.77725 -144.2148 Active  belly
+## 26114 2019-10-07 11:33:32      34    76   101 63.78126 -144.2097   Mort  belly
+## 26311 2019-10-07 11:35:59      34    74   141 63.77987 -144.2171   Mort  belly
+## 26513 2019-10-07 11:36:21      10    75    95 63.77391 -144.2365   Mort  belly
+## 27413 2019-10-07 11:50:36      10    80   121 63.52468 -143.7856   Mort  belly
+##       FlightNum Records  flag MoveDist MortFlag
+## 25615         5       9 FALSE     0.72      Yes
+## 25813         5       7 FALSE     0.37      Yes
+## 26114         5      27 FALSE     0.48      Yes
+## 26311         5      24 FALSE     0.42      Yes
+## 26513         5       7 FALSE     0.49      Yes
+## 27413         5      73 FALSE     0.59      Yes</code></pre>
 <p>Here, a recursive algorithm is used to make the determination. Basically, if a fish moves less than dist_thresh km for all consecutive detection periods following a detection, the fish will be flagged as dead. Geodesic distance is currently used to screen for dead fish, and mortality signal information is not taken into account – be sure to download the latest package version as updates will be made.</p>
 </div>
 <div id="step-6-add-the-results-to-an-existing-database" class="section level3">

@@ -6,6 +6,7 @@
 \usage{
 get.best.locations(
   detects,
+  date_bins = NA,
   bin_by = 1,
   n_thresh = 5,
   dist_max = 10,
@@ -14,6 +15,8 @@ get.best.locations(
 }
 \arguments{
 \item{detects}{A data.frame containing the raw data from telemetry flights. Detects will generally be the output of combine.data}
+
+\item{date_bins}{A matrix of two columns manually specifying the detection periods. The first column represents the detection period start dates whereas the second column represents the detection period end dates. The dates should be in string format "d/m/y." If the date_bins is specified, bin_by will be ignored.}
 
 \item{bin_by}{Specifies the length (in days) of the detection periods. If bin_by=2, the best location will be found for each fish in two day bins.}
 
@@ -24,7 +27,7 @@ get.best.locations(
 \item{remove_flagged}{If remove_flagged=T, the flagged detections will be removed in the returned data.frame.}
 }
 \value{
-Returns a list containing two data.frames. $all_detects adds some useful to all_data:  $all_detects\$BestSignal is the signal with the highest power in a detection period, $all_detects\$Dist is the geodesic distance (in km) between the detection location and the associated highest power detection, and $all_detects\$Records is number of times that a fish was detected in a detection period. $best_detects contains the highest power detections. $best_detects$Flag indicates if a detection has been flagged as erroneous.
+Returns a list containing two data.frames. $all_detects adds some useful to all_data:  $all_detects\$BestSignal is the signal with the highest power in a detection period, $all_detects\$Dist is the geodesic distance (in km) between the detection location and the associated highest power detection, $all_detects\$FlightNum is the detection period, and $all_detects\$Records is number of times that a fish was detected in a detection period. $best_detects contains the highest power detections. $best_detects$Flag indicates if a detection has been flagged as erroneous.
 }
 \description{
 The best location is considered to be the location where the highest power detection occurred. The best location will be flagged if there are fewer than n_thresh detections within a distance of dist_max km from the best detection during the detection period. The best location will also be flagged if a negative linear relationship does not exist between the signal strength and the distance to the highest powere detection for all detections within dist_max km from the best signal in the detection period.
