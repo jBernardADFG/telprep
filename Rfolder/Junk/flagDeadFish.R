@@ -1,6 +1,6 @@
 #' flag.dead.fish
 #'
-#' A recursive algorithm is used to determine whether or not a fish is alive.
+#' An add hoc algorithm to determine which fish are alive vs dead.
 #'
 #' @param best_detects A best detection data.frame. best_detects will generally be output from get.best.locations
 #' @param dist_thresh  Basically, if a fish moves less than dist_thresh km for all consecutive detection periods following the detection, the fish will be flagged as dead. Geodesic distance is currently used.
@@ -54,5 +54,8 @@ flag.dead.fish <- function(best_detects, dist_thresh=10){
     }
   }
   rdf <- rdf[order(rdf$DateTime),]
+  # I think we're doing pretty good, but we need to do something to kill less fish
+
+
   return(rdf)
 }
