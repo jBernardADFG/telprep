@@ -1,3 +1,0 @@
-# read.stat.file <- function(){
-#
-# }
