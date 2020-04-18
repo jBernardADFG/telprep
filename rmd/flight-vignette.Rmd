@@ -6,11 +6,6 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(telprep)
-library(rlist)
-library(rgdal)
-library(sp)
-library(raster)
-library(riverdist)
 ```
 
 This vignette will show you how the telprep package can be used to automatically process data from telemetry flights. The program is designed to read in raw txt files, filter out erroneous signals, determine the living status of fish, and create some pretty pictures. This tutorial highlights the general workflow of the program. For a finer scale description of the program functionalities, see the help files for the following functions: read.flight.data, channels.merge, replace.date, combine.data, get.date.bins, get.best.locations, flag.dead.fish, plot.locations, and add.to.database.
@@ -159,7 +154,7 @@ Here, a recursive algorithm is used to make the determination. Basically, if a f
 #### Step 7 -- Create some pretty pictures
 A plotting function (plot.locations) is included in the telprep package. This function is designed to be used throughout the analysis. Example of how the function can be used are provided here:
 ```{r}
-sldf <- readOGR("example.shp")
+# sldf <- readOGR("example.shp")
 plot.locations(sldf, all_data, col_by_fish=F, main="all detections -- all flights -- full extent")
 plot.locations(sldf, best_detects, col_by_fish=F, main="best detections -- all flights -- full extent")
 # To change the extent
