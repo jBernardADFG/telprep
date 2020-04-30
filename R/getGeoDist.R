@@ -14,7 +14,7 @@ get.geo.dist = function(long1, lat1, long2, lat2, units = "km") {
   distance_list = purrr::map2(longlat1, longlat2, function(x,y) geosphere::distHaversine(x, y))
   distance_m = rlist::list.extract(distance_list, position = 1)
   if (units == "km") {
-    distance = distance_m / 1000.0;
+    distance = distance_m / 1000.0
   }
   else if (units == "miles") {
     distance = distance_m / 1609.344

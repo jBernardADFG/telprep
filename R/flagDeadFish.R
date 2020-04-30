@@ -54,8 +54,5 @@ flag.dead.fish <- function(best_detects, dist_thresh=10){
     }
   }
   rdf <- rdf[order(rdf$DateTime),]
-  # I think we're doing pretty good, but we need to do something to kill less fish
-
-
   return(rdf)
 }
