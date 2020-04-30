@@ -9,6 +9,6 @@ Description: Processing of telemetry data quickly and automatically. The program
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
-Depends: R (>= 3.5.0), rlist (>= 0.4.6.1), sfsmisc (>= 1.1-6), riverdist(>= 0.15.0), raster (>= 3.0-12), rgdal (>= 1.4-8), sp(>= 1.4-1)
+Depends: rlist (>= 0.4.6.1), sfsmisc (>= 1.1-6), riverdist(>= 0.15.0), raster (>= 3.0-12), rgdal (>= 1.4-8), sp(>= 1.4-1)
 Suggests: R.rsp 
 VignetteBuilder: R.rsp
