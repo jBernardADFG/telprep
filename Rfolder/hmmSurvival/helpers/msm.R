@@ -41,3 +41,8 @@ msm(obs ~ time, subject=subject, data=dat, qmatrix=two.q,
                   hmmMV(hmmBinom(size=40, prob=0.3),
                         hmmBinom(size=40, prob=0.3))),
     control=list(maxit=10000))
+
+
+
+
+

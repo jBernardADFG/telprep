@@ -54,7 +54,7 @@ org.dat.msm <- function(best_detects, t_star=1){
   r_df$DisInd <- r_df$TagInd <- rep(NA, nrow(r_df))
   for(i in 1:nrow(r_df)){
     if (is.na(r_df$Displacement[i])){
-      r_df$DispInd[i] <- 1
+      r_df$DispInd[i] <- 3
     }else if (r_df$Displacement[i] <= t_star){
       r_df$DispInd[i] <- 2
     }else{
