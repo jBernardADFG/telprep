@@ -4,18 +4,19 @@
 \alias{plot.locations}
 \title{plot.locations}
 \usage{
-plot.locations(
-  spdf,
+\method{plot}{locations}(
+  sldf,
   detects,
   col_by_fish = T,
   flight_num = NA,
   channel = NA,
   tag_id = NA,
+  viterbi = F,
   main = ""
 )
 }
 \arguments{
-\item{spdf}{Shapefile or SpatialLinesDataFrame representation of the river network}
+\item{sldf}{Shapefile or SpatialLinesDataFrame representation of the river network}
 
 \item{detects}{Dataframe with the detections -- output of get.best.locations()$best_detects or}
 
