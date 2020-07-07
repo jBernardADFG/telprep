@@ -10,15 +10,16 @@
 #' @export
 
 rm.land.detects <- function(all_data, river_network, dist_thresh=500){
+  if(as.character(rivernet$sp@proj4string) != "+proj=utm +zone=5 +datum=WGS84 +units=m +no_defs") stop("the rivernetwork crs needs to be converted to a mercator projection.")
   print("be patient -- this could take a few minutes")
   coords <- data.frame(
-    lon = all_data$Longitude,
-    lat = all_data$Latitude
+    lon = all_data$X,
+    lat = all_data$Y
   )
   snap_dist <- xy2segvert(coords[,1], coords[,2], river_network)$snapdist
   all_data <- all_data[snap_dist<=dist_thresh,]
   par(mar=c(1,1,1,1))
-  all_data$Longitude <- coords[snap_dist<=dist_thresh,1]
-  all_data$Latitude <- coords[snap_dist<=dist_thresh,2]
+  all_data$X <- coords[snap_dist<=dist_thresh,1]
+  all_data$Y <- coords[snap_dist<=dist_thresh,2]
   return(all_data)
 }
