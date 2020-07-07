@@ -23,9 +23,9 @@ read.flight.data <- function(folder_path, crs_in="+proj=longlat +datum=WGS84 +no
       lon = dat$Longitude,
       lat = dat$Latitude
     )
-    s_pts <- SpatialPoints(coords, proj4string = CRS(crs_in))
-    crs_out <- CRS("+proj=utm +zone=5 +datum=WGS84")
-    s_pts <- spTransform(s_pts, crs_out)
+    s_pts <- sp::SpatialPoints(coords, proj4string = sp::CRS(crs_in))
+    crs_out <- sp::CRS("+proj=utm +zone=5 +datum=WGS84")
+    s_pts <- sp::spTransform(s_pts, crs_out)
     coords <- s_pts@coords
     flight_df[[i]]$Longitude <- coords[,1]
     flight_df[[i]]$Latitude <- coords[,2]
@@ -33,7 +33,7 @@ read.flight.data <- function(folder_path, crs_in="+proj=longlat +datum=WGS84 +no
     names(flight_df[[i]])[names(flight_df[[i]])=="Longitude"] <- "X"
   }
   names(flight_df) <- list.files(folder_path)
-  attr(flight_df, "crs") <- CRS("+proj=utm +zone=5 +datum=WGS84")
+  attr(flight_df, "crs") <- sp::CRS("+proj=utm +zone=5 +datum=WGS84")
   return(flight_df)
 }
 

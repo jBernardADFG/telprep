@@ -81,14 +81,14 @@ get.best.locations <- function(detects, date_bins=NA, bin_by = 1, n_thresh=5, di
       for (i in 1:nrow(date_windows)){
         if(sum(detects$DateTime >= date_windows[i,1] & detects$DateTime < date_windows[i,2] & detects$Channel==channelsi & detects$TagID==tagsi) > 0) {
           best_loc <- detects[detects$DateTime >= date_windows[i,1] & detects$DateTime < date_windows[i,2] & detects$Channel==channelsi & detects$TagID==tagsi & detects$BestSignal==T,]
-          best_long <- best_loc$Longitude
-          best_lat <- best_loc$Latitude
+          best_long <- best_loc$X
+          best_lat <- best_loc$Y
           other_locs <- detects[detects$DateTime >= date_windows[i,1] & detects$DateTime < date_windows[i,2] & detects$Channel==channelsi & detects$TagID==tagsi,]
           which <- which(detects$DateTime >= date_windows[i,1] & detects$DateTime < date_windows[i,2] & detects$Channel==channelsi & detects$TagID==tagsi)
           for (i in 1:nrow(other_locs)){
-            other_long <- other_locs$Longitude[i]
-            other_lat <- other_locs$Latitude[i]
-            detects$Dist[which[i]] <- round(pointDistance(c(best_long[1], best_lat[1]), c(other_long, other_lat), lonlat=F)/1000,3)
+            other_long <- other_locs$X[i]
+            other_lat <- other_locs$Y[i]
+            detects$Dist[which[i]] <- round(sqrt((best_long[1]-other_long)^2+(best_lat[1]-other_lat)^2)/1000, 3)
           }
         }
       }

@@ -19,13 +19,11 @@ flag.dead.fish <- function(best_detects, dist_thresh=10){
         dets$MoveDist <- NA
         if (nrow(dets)>1){
           for (i in 1:(nrow(dets)-1)){
-            dets$MoveDist[i]  <- round(pointDistance(c(dets$Longitude[i], dets$Latitude[i]), c(dets$Longitude[i+1], dets$Latitude[i+1]), lonlat=F)/1000,3)
-            # dets$MoveDist[i] <- round(get.geo.dist(dets$Longitude[i], dets$Latitude[i], dets$Longitude[i+1], dets$Latitude[i+1]),2)
+            dets$MoveDist[i] <- round(sqrt((dets$X[i]-dets$X[i+1])^2+(dets$Y[i]-dets$Y[i+1])^2)/1000, 3)
           }
         }
       }
       new_dets <- rbind(new_dets, dets)
-      new_dets
     }
   }
   rdf <- data.frame()

@@ -24,7 +24,6 @@ flag.dead.fish <- function(best_detects, dist_thresh=10){
         }
       }
       new_dets <- rbind(new_dets, dets)
-      new_dets
     }
   }
   rdf <- data.frame()

@@ -20,7 +20,7 @@ combine.data <- function(df_list, source_vec=NA){
   }
   r_df <- r_df[order(r_df$DateTime),]
   r_df <- unique(r_df)
-  attr(r_df, "crs") <- CRS("+proj=utm +zone=5 +datum=WGS84")
+  attr(r_df, "crs") <- sp::CRS("+proj=utm +zone=5 +datum=WGS84")
   return(r_df)
 }
 
