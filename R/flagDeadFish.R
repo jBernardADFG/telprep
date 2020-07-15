@@ -1,13 +1,15 @@
-#' flag.dead.fish
+#' Uses movement information to determine the living status of fish.
 #'
-#' An add hoc algorithm to determine which fish are alive vs dead.
-#'
-#' @param best_detects A best detection data.frame. best_detects will generally be output from get.best.locations
-#' @param dist_thresh  Basically, if a fish moves less than dist_thresh km for all consecutive detection periods following the detection, the fish will be flagged as dead. Geodesic distance is currently used.
+#' @description An ad hoc algorithm is used to determine the living status of fish. Basically, if a fish moves less than dist_thresh km for all consecutive detection periods following the detection, the fish will be flagged as dead. Euclidean distance is currently used. To determine the survival status of fish using a statistical approach that incorporates mortality sensor information use \code{\link{hmm_survival}}.
+#' @param best_detects The output of \code{\link{get_best_locations} or \code{\link{get_locations}}.
+#' @param dist_thresh  See description.
 #' @return Returns a data.frame where $MortFlag=T if a fish has been flagged as dead.
 #' @export
+#' @examples
+#' flagged_fish <- flag_dead_fish(best_detects)
+#' head(flagged_fish)
 
-flag.dead.fish <- function(best_detects, dist_thresh=10){
+flag_dead_fish <- function(best_detects, dist_thresh=10){
   allchannels <- sort(unique(best_detects$Channel))
   alltags <- sort(unique(best_detects$TagID))
   new_dets <- data.frame()

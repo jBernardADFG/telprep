@@ -8,205 +8,239 @@ knitr::opts_chunk$set(echo = TRUE)
 library(telprep)
 ```
 
-This vignette will show you how the telprep package can be used to automatically process data from telemetry flights. The program is designed to read in raw txt files, filter out erroneous signals, determine the living status of fish, and create some pretty pictures. This tutorial highlights the general workflow of the program. For a finer scale description of the program functionalities, see the help files for the following functions: read.flight.data, channels.merge, replace.date, combine.data, get.date.bins, get.best.locations, flag.dead.fish, plot.locations, and add.to.database.
-
+This vignette will show you how the telprep package can be used to automatically process data from telemetry flights. The program is designed to read in raw txt files, filter out erroneous signals, determine the living status of fish, and create some pretty pictures. This tutorial highlights the general workflow of the program. For a finer scale description of the program functionalities, see the help files for the following functions: read_flight_data, channels_merge, replace_date, combine_data, get_date_bins, rm_land_detects, get_best_detections, get_locations, flag_dead_fish, hmm_survival, and make_plot.
 
 ### Program Workflow:
-* Step 1 -- Import geographic data
-* Step 2 -- Read raw detection data into R
-* Step 3 -- If channels or dates were misprogrammed, make corrections
-* Step 4 -- Combine all of the raw data into a single data.frame
-* Step 5 -- Flag for erroneous signals and determine the living status fish
+
+* Step 1 -- Read raw detection data into R
+* Step 2 -- If channels or dates were misprogrammed, make corrections
+* Step 3 -- Combine the raw data between receivers and across flights
+* Step 4 -- Import geographic data
+* Step 5 -- Remove false signals and determine the location of each fish during a set of detection periods
 * Step 6 -- Determine the living status of the fish
 * Step 7 -- Create some pretty pictures
-* Step 8 -- Add the data to a pre-existing database
 
-### Step 1: Import geographic data
-In order to use the telprep package, you must first import a SpatialLinesDataFrame representation of the river system into R. The following lines of code are used to import the shapefile (names example.shp) as a SpatialLinesDataFrame object (please see the sp package for help):
+### Step 1 -- Read raw detection data into R
+
+Begin by sticking the raw txt files into a folder. Txt files from multiple flights can and should be included in the folder. When naming the txt files, the flight grouping, flight date, and the receiver location (belly/wing) should be included (eg: F1_1-26-19_Belly.TXT) as this information will be used later on. Find the directory of the folder (my example files are in "D:/Jordy/flight-data/") and store the coordinate reference systems of the txt files (the proj4string) in the variable crs_in. The function read_flight_data can now be used to read the raw data into R and store it in the variable raw_data:
+
 ```{r}
-setwd("D:/Jordy/telprep/telprep/data/sf")
-sldf <- readOGR("example.shp")
-plot(sldf)
+# directory <- "D:/Jordy/flight-data/"
+# crs_in <- "+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0"
+# raw_data <- read_flight_data(directory, crs_in)
 ```
 
-### Step 2 -- Read raw detection data into R
-Now that the geographic information has been imported, the next step is to read the detection data into R. Begin by sticking the raw txt files into a folder. Txt files from multiple flights can be included in the folder. When naming the txt files, the flight grouping, flight date, and the receiver location (belly/wing) should be included (eg: F1_1-26-19_Belly.TXT) as this information will be used later on. Find the directory of the folder (my example files are in D:/Jordy/telprep/telprep2/data/) and store the coordinate reference systems of the txt files and the shapefile (the proj4string) in the variables crs_data and crs_sldf respectively. The function read.flight.data can now be used to read the detection into R:
-```{r}
-directory <- "C:/Users/19708/Desktop/data/"
-crs_data <- "+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0"
-crs_sldf <- "+proj=aea +lat_1=55 +lat_2=65 +lat_0=50 +lon_0=-154 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
-raw_data <- read.flight.data(directory, crs_data, crs_sldf)
-```
-All of the raw data is now stored in the variable raw_data. 
+Structurally, raw_data is a list of data.frames (there is one for each txt file in the folder). To see how these data.frames are ordered, run
 
-Structurally, raw_data is a list of data.frames. To see how the data is organized internally, run
 ```{r}
 names(raw_data)
 ```
-The contents of "tburb_f1_1-26-19-WING.TXT" are stored in the 2nd data.frame in the list. To see these contents, run raw_data[[2]].
 
-### Step 3 -- If channels or dates were misprogrammed, make corrections
-If a channel or date was misprogrammed, it needs to be corrected before combining the contents of raw_data into a single data.frame. 
+The contents of "tburb_f1_1-26-19-WING.TXT" are stored in the 2nd data.frame in the list. To inspect the contents, run raw_data[[2]].
+
+### Step 2 -- If channels or dates were misprogrammed, make corrections
+
+If a channel or date was misprogrammed, it needs to be corrected before the contents of raw_data can be combined into a single data.frame. 
 
 ##### Misprogrammed Channels
-The following example will show you how to fix a misprogrammed channel. In the example, we will suppose that channel 3 was misprogrammed as channel 10 in "tburb_f1_1-26-19-WING.TXT". To peek at the data we can run
+
+Suppose that channel 3 was misprogrammed as channel 10 in "tburb_f1_1-26-19-WING.TXT". To peek at the data run
+
 ```{r}
 head(raw_data[[2]])
 ```
+
 To replace channel 10 with channel 3, the following line of code is run:
+
 ```{r}
-raw_data[[2]] <- channels.merge(raw_data[[2]], 10, 3)
+raw_data[[2]] <- channels_merge(raw_data[[2]], 10, 3)
 head(raw_data[[2]])
 ```
 
 ##### Misprogrammed Dates
-This example will show you how to fix a misprogrammed date. We will suppose that a date was misprogrammed in the file "tburb_f5_10-17-19-WING.TXT" and the file "tburb_f5_10-7-19-WING.TXT". To peek at the data, run 
+
+Suppose that a date was misprogrammed in the file "tburb_f5_10-17-19-WING.TXT". To peek at the data, run 
+
 ```{r}
 head(raw_data[[16]])
-head(raw_data[[18]])
 ```
-If the correct flights dates were "10/17/19" and "10/7/19", the following lines of code will make the corrections:
+
+If the correct flight date was "10/17/19", the following line of code will make the correction:
+
 ```{r}
-raw_data[[16]] <- replace.date(raw_data[[16]], new_date ="10/17/19") 
+raw_data[[16]] <- replace_date(raw_data[[16]], new_date ="10/17/19") 
 head(raw_data[[16]])
-raw_data[[18]] <- replace.date(raw_data[[18]], new_date ="10/7/19") 
-head(raw_data[[18]])
 ```
 
-### Step 4 -- Combine all of the raw data into a single data.frame
-The function combine.data combines all of the data stored in raw_data into a single data.frame. 
+### Step 3 -- Combine all of the raw data into a single data.frame
 
-An argument (source_vec) is provided so that the source of each txt file can be specified. The argument can be used to specify whether a receiver was located on the belly or the wing of the aircraft. Because 26 txt files were contained in the example folder ("C:/Users/19708/Desktop/data/"), a vector of length 26 is used to incode this information. To determine the source of each data.frame in raw_data, we can run names(raw_data) to assist in the construction of source_vec:
+The function combine_data combines all of the data stored in raw_data into a single data.frame. 
+
+An argument (source_vec) is provided so that the source of each txt file can be specified. The argument can, for instance, be used to specify whether a receiver was located on the belly or the wing of the aircraft. Because 26 txt files were contained in the example folder, a vector of length 26 is used to encode this information. In determining the source of each data.frame, it may be helpful to run names(raw_data):
 
 ```{r}
 names(raw_data)
 source_vec <- c(rep(c("belly","wing"), 10), rep(c("wing","belly"),2), c("belly","wing"))
 source_vec
 ```
-Now that the source of the data has been specified, we can use the function combine.data to combine the contents of raw_data:
+
+Now that the source of the data has been specified, we can use the function combine_data to combine the contents of raw_data:
+
 ```{r}
-all_data <- combine.data(raw_data, source_vec)
+all_data <- combine_data(raw_data, source_vec)
 head(all_data)
 ```
 
-#### A note for Laura:
+### Step 4: Import geographic data
 
-4 files contain fish ID's > 200 :
-* "tburb_f5_10-7-19-BELLY.TXT"                      
-* "tburb_f5_10-7-19-WING.TXT"
-* "tburb_f7_Jan-20-AG-2ndFL-RIGHT ANTENNA-BELLY.TXT"
-* "tburb_f8_Feb-20-WING.TXT"
-
-How should this data be treated? 
-
-For now, I'm going to remove it:
+In order to use the telprep package, you must first import a SpatialLinesDataFrame representation of the river system into R. The following lines of code can be used to import a shapefile (named example.shp) as a SpatialLinesDataFrame object using the readOGR function from the sp package:
 
 ```{r}
-all_data <- all_data[all_data$TagID <= 100, ]
+# setwd("D:/Jordy/telprep/telprep/data/sf")
+# sldf <- rgdal::readOGR("example.shp")
 ```
 
-### Step 5: Flag for erroneous signals and determine the living status fish
-The riverdist package is used internally for river distance and proximity related calculations. To use the functionality of this package, the SpatialLinesDataFrame object (from Step 1) must be converted into a river_network object. The functions line2network and
-cleanup should to make the conversion (the user is referred to the riverdist package for help).
-```{r}
-# river_net <- line2network(sp=sldf, tolerance = 500)
-load("D:/Jordy/telprep/telprep/data/river-net.Rdata") # loads a pre-processed river_network object named river_net.
-```
-
-The river_network object will now be used to discard the detections that occurred away from the river system. To remove the detections that occurred more than 500 m away from a river channel and store the data in a variable called river_detects, run the following line of code:
+The following line of code will ensure that the coordinate reference system of the geographic data matches that of the detection data. 
 
 ```{r}
-river_detects <- rm.land.detects(all_data, river_net, dist_thresh = 500)
+sldf <- sp::spTransform(sldf, attr(all_data, "crs"))
 ```
-The best location will now be determined using the function get.best.locations. In short, the best location is considered to be the river network location where the highest power detection occurred for each fish in each detection period. Two arguments can be used to specify the detection periods: date_bins allows the user to manually specify each detection period whereas bin_by allows the user to specify the length (in days) of the detection period. An overview of the manual approach is provided here.
 
-To assist in the construction date_bins, we can run the following lines of code to look up and constuct a vector incoding the flight grouping:
+
+The riverdist package is used internally for calculations related to river proximity. To use the functionality of this package, sldf must be converted into a river_network object. The function riverdist::line2network can be used to make the conversion (the user is referred to the riverdist package for help).
+
+```{r}
+# river_net <- riverdist::line2network(sp=sldf, tolerance = 500)
+```
+
+### Step 5: Flag for erroneous signals and determine the living status of fish
+
+The river_network object will now be used to discard the detections that occurred away from the river system. To remove the detections that occurred more than 500 m away from a river channel and store the data in a variable called river_detects, the following line of code can be run:
+
+```{r}
+river_detects <- rm_land_detects(all_data, river_net, dist_thresh = 500)
+```
+
+The best location will now be determined using the function get_best_locations. In short, the best location is considered to be the location where the highest power detection occurred during each flight period. The best location will be flagged if there are fewer than n_thresh detections within a distance of dist_max m from the best detection during the detection period. The best location will also be flagged if a negative linear relationship does not exist between the signal strength and the distance to the highest powered detection for all detections within dist_max km from the best signal in the detection period. 
+
+In the function get_best_locations, two arguments can be used to specify the detection periods: date_bins allows the user to manually specify each detection period whereas bin_by allows the user to specify the length (in days) of the detection period. An overview of the manual approach is provided here.
+
+To assist in the construction date_bins, we can run the following lines of code to look up and constuct a vector encoding the flight grouping:
+
 ```{r}
 names(raw_data)
 flight_group <- c(1,1,1,1,2,2,2,2,3,3,3,3,4,4,5,5,5,5,6,6,7,7,7,7,8,8)
 ```
-We can now use the function get.date.bins to get the appropriate detection periods. 
+
+We can now use the function get_date_bins to get the appropriate detection periods. 
+
 ```{r}
-date_bins <- get.date.bins(raw_data, flight_group)
+date_bins <- get_date_bins(raw_data, flight_group)
 date_bins
 ```
-Now, we use the function get.best.locations to determine the best locations and flag for false detections:
+
+Now, we use the function get_best_locations to determine the best locations and flag for false detections:
+
 ```{r echo = T, results = 'hide'}
-best_locations <- get.best.locations(river_detects, date_bins =  date_bins, bin_by=NA, n_thresh = 5, dist_max = 5, remove_flagged = T)
+best_locations <- get_best_locations(river_detects, date_bins =  date_bins, bin_by=NA, n_thresh = 5, dist_max = 5000, remove_flagged = T)
 ```
+
 ```{r}
 head(best_locations$all_detects)
 head(best_locations$best_detects)
 ```
-best_locations\$all_detects adds some useful to all_data: BestSignal is the signal with the highest power in a detection period, Dist is the geodesic distance (in km) between the detection location and the associated highest power detection, FlightNum is the detection period, and Records is number of times that a fish was detected in a detection period.
+
+best_locations\$all_detects adds some useful to all_data: BestSignal is the signal with the highest power in a detection period, Dist is the Euclidean distance (in km) between the detection location and the associated highest power detection, FlightNum is the detection period, and Records is number of times that a fish was detected in a detection period.
 
 all_detects\$best_detects contains the highest power detections only. A best detection will be flagged if there are fewer than n_thresh detections within a distance of dist_max km from the best detection during the detection period. The best detection will also be flagged if a positive linear relationship exists between Power and Dist for all detections within dist_max km from the best signal in the detection period (i.e. the signal strength increases as the best detection is approached). An argument (trend_strength) is provided to adjust so that the strength of the linear trend can be adjusted (i.e. when trend_strength = -1, detections will be flagged if the regression parameter $\hat{\beta}_1 > -1$). Best location and flagging information is summarized in best_detects. To remove the flagged detection in all_detects\$best_detects, set removed_flagged=T.
 
 ### Step 6 -- Determine the living status of the fish
-Once the best locations have been determined, the function flag.dead.fish can be used to determine the living status of fish:
+
+Once the best locations have been determined, the function flag_dead_fish can be used to determine the living status of fish:
+
 ```{r}
 best_detects <- best_locations$best_detects
-flagged_fish <- flag.dead.fish(best_detects, dist_thresh = 0.5)
+flagged_fish <- flag_dead_fish(best_detects, dist_thresh = 0.5)
 head(flagged_fish)
 ```
-Here, a recursive algorithm is used to make the determination. Basically, if a fish moves less than dist_thresh km for all consecutive detection periods following a detection, the fish will be flagged as dead -- the mortality sensors look super faulty to me so I'm not using this information. Be sure to download the latest package version as this algorithm is being modified. This update will use a Hidden Markov Model (HMM) to determine the living status of fish. The HMM will take distance and mortality sensor information into account statistically. The HMM will be used get estimates of fish survival and fish detection -- I don't think the current algoritm is particularly realistic and there's no way of accounting for uncertainty in an ad-hoc estimate.
+
+Here, a recursive algorithm is used to make the determination. Basically, if a fish moves less than dist_thresh km for all consecutive detection periods following a detection, the fish will be flagged as dead. 
+
+
+############################### Quitting Here For THE WEEK  #################################
+
+
+###############################
+# Need to Modify this Section # 
+#############################################################################################
+
+Be sure to download the latest package version as this algorithm is being modified. This update will use a Hidden Markov Model (HMM) to determine the living status of fish. The HMM will take distance and mortality sensor information into account statistically. The HMM will be used get estimates of fish survival and fish detection -- I don't think the current algoritm is particularly realistic and there's no way of accounting for uncertainty in an ad-hoc estimate.
+
+#############################################################################################
+
+
+
 
 #### Step 7 -- Create some pretty pictures
+
 A plotting function (plot.locations) is included in the telprep package. This function is designed to be used throughout the analysis. Example of how the function can be used are provided here:
+
 ```{r}
-# sldf <- readOGR("example.shp")
-plot.locations(sldf, all_data, col_by_fish=F, main="all detections -- all flights -- full extent")
-plot.locations(sldf, best_detects, col_by_fish=F, main="best detections -- all flights -- full extent")
+# plot.locations(sldf, all_data, col_by_fish=F, main="all detections -- all flights -- full extent")
+# plot.locations(sldf, best_detects, col_by_fish=F, main="best detections -- all flights -- full extent")
 # To change the extent
 # can use locator() to determine new extent
-sldf@bbox[1,1] <- 86343.0
-sldf@bbox[1,2] <- 662656.5
-sldf@bbox[2,1] <- 1428943
-sldf@bbox[2,2] <- 1715734
-best_detects <- best_locations$best_detects
-best_detects <- best_detects[!best_detects$flag,]
-plot.locations(sldf, all_data, col_by_fish=F, main="all detections -- all flights -- reduced extent")
-plot.locations(sldf, best_detects, col_by_fish=F, main="best locations -- all flights")
-a <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 1, main="best locations -- flight period 1")
-b <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 2, main="best locations -- flight period 2")
-c <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 3, main="best locations -- flight period 3")
-d <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 4, main="best locations -- flight period 4")
-e <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 5, main="best locations -- flight period 5")
-f <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 6, main="best locations -- flight period 6")
-g <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 7, main="best locations -- flight period 7")
-h <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 8, main="best locations -- flight period 8")
+# sldf@bbox[1,1] <- 86343.0
+# sldf@bbox[1,2] <- 662656.5
+# sldf@bbox[2,1] <- 1428943
+# sldf@bbox[2,2] <- 1715734
+# best_detects <- best_locations$best_detects
+# best_detects <- best_detects[!best_detects$flag,]
+# plot.locations(sldf, all_data, col_by_fish=F, main="all detections -- all flights -- reduced extent")
+# plot.locations(sldf, best_detects, col_by_fish=F, main="best locations -- all flights")
+# a <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 1, main="best locations -- flight period 1")
+# b <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 2, main="best locations -- flight period 2")
+# c <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 3, main="best locations -- flight period 3")
+# d <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 4, main="best locations -- flight period 4")
+# e <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 5, main="best locations -- flight period 5")
+# f <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 6, main="best locations -- flight period 6")
+# g <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 7, main="best locations -- flight period 7")
+# h <- plot.locations(sldf, best_detects, col_by_fish=F, flight_num = 8, main="best locations -- flight period 8")
 ```
 
 ```{r}
 # Give the fish colors and preserve the colors between flights
-plot.locations(sldf, best_detects, flight_num = 5, main="flight group 5")
-plot.locations(sldf, best_detects, flight_num = 6, main="flight group 6")
-plot.locations(sldf, best_detects, flight_num = 7, main="flight group 7")
-plot.locations(sldf, best_detects, flight_num = 8, main="flight group 8")
+# plot.locations(sldf, best_detects, flight_num = 5, main="flight group 5")
+# plot.locations(sldf, best_detects, flight_num = 6, main="flight group 6")
+# plot.locations(sldf, best_detects, flight_num = 7, main="flight group 7")
+# plot.locations(sldf, best_detects, flight_num = 8, main="flight group 8")
 ```
 
 ```{r}
 # To see the path of an individual fish between flights
-plot.locations(sldf, best_detects, col_by_fish=T, channel = 22, tag_id = 41, main="locations of a single fish")
+# plot.locations(sldf, best_detects, col_by_fish=T, channel = 22, tag_id = 41, main="locations of a single fish")
 ```
 
 ```{r}
 # To plot live vs. dead fish
-plot.locations(sldf, flagged_fish, col_by_fish = F)
+# plot.locations(sldf, flagged_fish, col_by_fish = F)
 ```
+
 ```{r}
-plot.locations(sldf, flagged_fish, flight_num = 1,col_by_fish = F)
-plot.locations(sldf, flagged_fish, flight_num = 2,col_by_fish = F)
-plot.locations(sldf, flagged_fish, flight_num = 3,col_by_fish = F)
-plot.locations(sldf, flagged_fish, flight_num = 4,col_by_fish = F)
-plot.locations(sldf, flagged_fish, flight_num = 5,col_by_fish = F)
-plot.locations(sldf, flagged_fish, flight_num = 6,col_by_fish = F)
-plot.locations(sldf, flagged_fish, flight_num = 7,col_by_fish = F)
-plot.locations(sldf, flagged_fish, flight_num = 8,col_by_fish = F)
+# plot.locations(sldf, flagged_fish, flight_num = 1,col_by_fish = F)
+# plot.locations(sldf, flagged_fish, flight_num = 2,col_by_fish = F)
+# plot.locations(sldf, flagged_fish, flight_num = 3,col_by_fish = F)
+# plot.locations(sldf, flagged_fish, flight_num = 4,col_by_fish = F)
+# plot.locations(sldf, flagged_fish, flight_num = 5,col_by_fish = F)
+# plot.locations(sldf, flagged_fish, flight_num = 6,col_by_fish = F)
+# plot.locations(sldf, flagged_fish, flight_num = 7,col_by_fish = F)
+# plot.locations(sldf, flagged_fish, flight_num = 8,col_by_fish = F)
 ```
 
 ### Step 8 -- Add the data to a pre-existing database
+
 To add the results to an existing database, find the filepath of your database and run the code
+
 ```{r}
 # filepath <- "C:/Users/19708/Desktop/database.csv"
 # add.to.database(filepath, flagged_fish)

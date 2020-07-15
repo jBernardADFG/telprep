@@ -1,20 +1,24 @@
-#' rm.land.detects
+#' Remove detections that occurred away from the river network
 #'
-#' Remove the detections that occurred away from the river network
-#' @param all_data Channel and date corrected output of combine.data. Note: the coordinates should use the same projection as the river network.
-#' @param river_network A river_network object discribing the riversystem topology (the output of riverdist::cleanup or riverdist::line2network).
-#' @param crs_1 The all_data coordinate reference system
-#' @param crs_2 The river_network coordinate reference system
+#' @param all_data The output of \code{\link{combine_data}}.
+#' @param river_network A river_network object discribing the riversystem topology (the output of \code{\link[riverdist]{line2network}}. The coordinates should use the same projection as the all_data. Note: \emph{attr(all_data, "crs")} the CRS of all_data.
 #' @param dist_thresh Distance criteria (in m) to remove detections
-#' @return Returns a dataframe containing the detections that occurred less than dist_thresh m from the river network. Coordinates may be converted. These detections will be plotted on top of the river network.
+#' @return Returns a data.frame containing the detections that occurred less than dist_thresh m from the river network.
 #' @export
+#' @examples
+#' sldf <- sp::spTransform(sldf, attr(all_data, "crs"))
+#' par(mfrow=c(2,1))
+#' # be patient -- these functions take a few minutes to run
+#' make_plot(sldf, all_data, open_maps=T)
+#' river_detects <- rm_land_detects(all_data, river_net, dist_thresh = 500)
+#' make_plot(sldf, river_detects, open_maps=T)
 
-rm.land.detects <- function(all_data, river_network, dist_thresh=500){
+rm_land_detects <- function(all_data, river_network, dist_thresh=500){
   if (!requireNamespace("telprep", quietly = TRUE)) {
     stop("Package \"telprep\" is needed for this function to work. Please install it.",
          call. = FALSE)
   }
-  if(rivernet$sp@proj4string@projargs != "+proj=utm +zone=5 +datum=WGS84 +units=m +no_defs") stop("the rivernetwork crs needs to be converted to a mercator projection.")
+  if(river_network$sp@proj4string@projargs != "+proj=utm +zone=5 +datum=WGS84 +units=m +no_defs") stop("the rivernetwork crs needs to be converted to a mercator projection.")
   print("be patient -- this could take a few minutes")
   coords <- data.frame(
     lon = all_data$X,

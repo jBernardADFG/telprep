@@ -1,12 +1,16 @@
-#' combine.data
+#' Combine data between receivers and across telemetry flights
 #'
-#' Combine the raw data between receivers and telemetry flights
-#' @param df_list A list of data.frames to merge. The list will generally be the output of read.flight.data.
+#' @param df_list A list of data.frames to merge. The list will be the output of \code{\link{read_flight_data}}, \code{\link{channels_merge}}, or \code{\link{replace_date}}.
 #' @param source_vec A vector of strings to specify the source of each data.frame in the list. The ordering of df_list and source_vec should coorespond (eg: to merge list(belly_df, wing_df), use source_vec=c("belly", "wing")).
-#' @return Returns a dataframe containing the merged data. The data will be ordered by detection time.
 #' @export
+#' @examples
+#' names(raw_data)
+#' source_vec <- c(rep(c("belly","wing"), 10), rep(c("wing","belly"),2), c("belly","wing"))
+#' source_vec
+#' all_data <- combine_data(raw_data, source_vec)
+#' head(all_data)
 
-combine.data <- function(df_list, source_vec=NA){
+combine_data <- function(df_list, source_vec=NA){
   r_df <- data.frame()
   if(is.na(source_vec[1])){
     for (i in 1:length(df_list)){

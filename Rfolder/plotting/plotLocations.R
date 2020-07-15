@@ -1,15 +1,53 @@
-#' plot.locations
+#' A general plotting function
 #'
-#' Plot fish locations
-#' @param sldf Shapefile or SpatialLinesDataFrame representation of the river network
-#' @param detects Dataframe with the detections -- output of get.best.locations()$best_detects or
-#' @param col_by_fish col_by_fish=T assigns fish a unique color
-#' @param flight_num vector with the flight numbers to plot. defaults to all
-#' @param channel vector with the channel numbers to plot
-#' @param tag_id vector with the tag ids to plot
-#' @param main plot title
+#' @param sldf Shapefile or SpatialLinesDataFrame representation of the river network.
+#' @param detects Output of \code{\link{combine_data}}, \code{\link{rm_land_detects}}, \code{\link{get_best_locations}}, or \code{\link{flag_dead_fish}}.
+#' @param extent A vector of length four specifying the plotting extent c(x_min, x_max, y_min, y_max)
+#' @param open_maps If open_maps=T, the \code{\link[OpenStreetMap]{openmap}} will be used to add a background to the plot.
+#' @param type The background to use (see \code{\link[OpenStreetMap]{openmap}}) for more information.
+#' @param darken Increase to darken the background when open_maps=T. Defaults to 1.
+#' @param col_by_fish col_by_fish=T assigns each fish a unique color. This color will be preserved between mappings (i.e. between different flight periods).
+#' @param flight_num Numerical argument specifying the flight period to plot. Defaults to all.
+#' @param channel Vector with the channel numbers to plot. If channel=NA, all channels will be used.
+#' @param tag_id Vector with the tag ids to plot. If tag_id=NA, all tag ids will be used.
 #' @export
-make.plot <- function(sldf, detects, open_maps=F, type="bing", darken=4, col_by_fish=F, flight_num=NA, channel=NA, tag_id=NA, viterbi=F, main="", ...){
+#' @examples
+#' # basic plot
+#' par(mfrow=c(1,1))
+#' make_plot(sldf, best_detects)
+#'
+#' # darken background
+#' make_plot(sldf, best_detects, darken=2.5)
+#'
+#' # change style of background
+#' make_plot(sldf, best_detects, type="esri-topo")
+#'
+#' # give each fish a unique color preserved through flights
+#' par(mfrow=c(3,1))
+#' make_plot(sldf, best_detects, col_by_fish=T, flight=1, darken=2.5)
+#' make_plot(sldf, best_detects, col_by_fish=T, flight=2, darken=2.5)
+#' make_plot(sldf, best_detects, col_by_fish=T, flight=3, darken=2.5)
+#'
+#' # to plot the locations for a single fish
+#' par(mfrow=c(1,1))
+#' make_plot(sldf, best_detects, channel=10, tag_id=11, darken=2.5)
+#'
+#' # to zoom in to a specified extent
+#' make_plot(sldf, best_detects,  darken=2.5)
+#' # Note: can use \code{\link{locator}}) to help determine extent
+#' extent <- c(x_min=466060, x_max=1174579, y_min=6835662, y_max=7499016)
+#' make_plot(sldf, best_detects, extent, darken=2.5)
+#'
+#' # plotting live and dead fish by flight period -- green fish have expired
+#' par(mfrow=c(3,1))
+#' extent <- c(x_min=466060, x_max=1174579, y_min=6835662, y_max=7499016)
+#' make_plot(sldf, viterbi, extent, type="bing", darken=2.5, viterbi=T, flight=1)
+#' make_plot(sldf, viterbi, extent, type="bing", darken=2.5, viterbi=T, flight=3)
+#' make_plot(sldf, viterbi, extent, type="bing", darken=2.5, viterbi=T, flight=5)
+
+
+make_plot <- function(sldf, detects, extent=NA, type="bing", darken=1, col_by_fish=F, flight_num=NA, channel=NA, tag_id=NA, viterbi=F){
+  open_maps=T
   if (!requireNamespace("sp", quietly = TRUE)) {
     stop("Package \"sp\" is needed for this function to work. Please install it.",
          call. = FALSE)
@@ -28,6 +66,13 @@ make.plot <- function(sldf, detects, open_maps=F, type="bing", darken=4, col_by_
     tag_id <- unique(detects$TagID)
   }
   par(mar=c(1,1,1,1))
+  if (!is.na(extent)[1]){
+    sldf@bbox[1,1] <- extent[1]
+    sldf@bbox[1,2] <- extent[2]
+    sldf@bbox[2,1] <- extent[3]
+    sldf@bbox[2,2] <- extent[4]
+  }
+  sldf <- crop(sldf, sldf@bbox)
   if(isTRUE(open_maps)){
     if (!requireNamespace("OpenStreetMap", quietly = TRUE)) {
       stop("Package \"OpenStreetMap\" is needed when open_maps=T. Please install it.",
@@ -44,9 +89,9 @@ make.plot <- function(sldf, detects, open_maps=F, type="bing", darken=4, col_by_
     hsl <- plotwidgets::col2hsl(rgb)
     hsl[3,] <- hsl[3,]/darken
     background$tiles[[1]]$colorData <- plotwidgets::hsl2col(hsl)
-    plot(background, removeMargin=F)
+    plot(background, main="",removeMargin=F)
   }else{
-    plot(raster::crop(sldf,raster::extent(sldf)), main=main)
+    plot(raster::crop(sldf,raster::extent(sldf)), main="")
     rect(sldf@bbox[1,1],sldf@bbox[2,1],sldf@bbox[1,2],sldf@bbox[2,2], col = "black")
   }
   if (is.null(detects$FlightNum)){
@@ -82,7 +127,6 @@ make.plot <- function(sldf, detects, open_maps=F, type="bing", darken=4, col_by_
     }else{
       plot_sym <- rep(19, nrow(bd))
       plot_sym[bd$MortFlag=="Yes"] <- 4
-      print(plot_sym)
       lines(raster::crop(sldf,raster::extent(sldf)), col="blue4", lwd=2)
       points(bd$X, bd$Y, pch=plot_sym, col=cols, cex=1, xlim=bbox(sldf)[1,],ylim=bbox(sldf)[2,])
     }

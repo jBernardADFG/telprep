@@ -1,14 +1,13 @@
-# -------------------------------------------------------------------------
 #' Read in txt file from telemetry flight
 #'
 #' @param input_file The file path of the txt file.
 #' @param remove_999 Use remove_999=T to remove all 999 tag IDs. Use remove_999=F otherwise.
 #' @param mort_sig When Tag IDs > 100 signal mortality, use mort_sig=T. Use mort_sig=F otherwise.
-#' @param date_format The program uses POSIXct dates internally. If the date was programmed with an unusual format, it can be modified here.
+#' @param try_formats The program uses POSIXct dates internally. If the date was programmed with an unusual format, it can be modified here.
 #' @return Returns a data.frame representation of the raw data.
+#' @export
 
-
-read.flight.file <- function(input_file, remove_999=T, mort_sig=T, try_formats=c("%m/%d/%y %H:%M:%OS", "%m/%d/%Y %H:%M:%OS")){
+read_flight_file <- function(input_file, remove_999=T, mort_sig=T, try_formats=c("%m/%d/%y %H:%M:%OS", "%m/%d/%Y %H:%M:%OS")){
   rawdata <- scan(file=input_file, what="character", quiet=T)
   start_read <- which(rawdata=="Longitude")[1]+1
   rawdata_trunc <- rawdata[start_read:length(rawdata)]
