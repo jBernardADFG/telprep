@@ -20,7 +20,7 @@ make_plot(
 \arguments{
 \item{sldf}{Shapefile or SpatialLinesDataFrame representation of the river network.}
 
-\item{detects}{Output of \code{\link{combine_data}}, \code{\link{rm_land_detects}}, \code{\link{get_best_locations}}, or \code{\link{flag_dead_fish}}.}
+\item{detects}{Output of \code{\link{combine_data}}, \code{\link{rm_land_detects}}, \code{\link{get_best_locations}}, \code{\link{flag_dead_fish}}, \code{\link{flag_dead_fish}}, or \code{\link{hmm_survival}}.}
 
 \item{extent}{A vector of length four specifying the plotting extent c(x_min, x_max, y_min, y_max)}
 
@@ -36,14 +36,17 @@ make_plot(
 
 \item{tag_id}{Vector with the tag ids to plot. If tag_id=NA, all tag ids will be used.}
 
-\item{open_maps}{If open_maps=T, the \code{\link[OpenStreetMap]{openmap}} will be used to add a background to the plot.}
+\item{viterbi}{Use viterbi=T to color by survival state using the viterbi path (detects needs to be the viterbi output from \code{\link{hmm_survival}}; see examples). Expired fish will be plotted in green.}
 }
 \description{
 A general plotting function
 }
 \examples{
-# basic plot
+# plotting all detections
 par(mfrow=c(1,1))
+make_plot(sldf, all_data)
+
+# real detections only
 make_plot(sldf, best_detects)
 
 # darken background
@@ -52,7 +55,7 @@ make_plot(sldf, best_detects, darken=2.5)
 # change style of background
 make_plot(sldf, best_detects, type="esri-topo")
 
-# give each fish a unique color preserved through flights
+# give each fish a unique color preserved through flights -- unfortunately there are only so many colors
 par(mfrow=c(3,1))
 make_plot(sldf, best_detects, col_by_fish=T, flight=1, darken=2.5)
 make_plot(sldf, best_detects, col_by_fish=T, flight=2, darken=2.5)
@@ -63,15 +66,13 @@ par(mfrow=c(1,1))
 make_plot(sldf, best_detects, channel=10, tag_id=11, darken=2.5)
 
 # to zoom in to a specified extent
-make_plot(sldf, best_detects,  darken=2.5)
-# Note: can use \code{\link{locator}}) to help determine extent
 extent <- c(x_min=466060, x_max=1174579, y_min=6835662, y_max=7499016)
 make_plot(sldf, best_detects, extent, darken=2.5)
 
 # plotting live and dead fish by flight period -- green fish have expired
 par(mfrow=c(3,1))
-extent <- c(x_min=466060, x_max=1174579, y_min=6835662, y_max=7499016)
-make_plot(sldf, viterbi, extent, type="bing", darken=2.5, viterbi=T, flight=1)
-make_plot(sldf, viterbi, extent, type="bing", darken=2.5, viterbi=T, flight=3)
-make_plot(sldf, viterbi, extent, type="bing", darken=2.5, viterbi=T, flight=5)
+viterbi <- hmm_survival(best_detects)$viterbi
+make_plot(sldf, viterbi, type="bing", darken=2.5, viterbi=T, flight=1)
+make_plot(sldf, viterbi, type="bing", darken=2.5, viterbi=T, flight=3)
+make_plot(sldf, viterbi, type="bing", darken=2.5, viterbi=T, flight=5)
 }

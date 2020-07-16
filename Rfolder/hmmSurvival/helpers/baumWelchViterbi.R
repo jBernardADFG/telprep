@@ -19,10 +19,10 @@ fit_hmm <- function(msm_data){
                   subject=subject,
                   initprobs = c(0.999,0.001),
                   qmatrix = rbind(c(0.999,0.001),c(0,1)),
-                  hmodel = list(hmmMV(hmmCat(prob=c(0.5,0.05,0.25)), # Alive - move
-                                      hmmCat(prob=c(0.5,0.05,0.25))), # Alive - mort-sig
-                                hmmMV(hmmCat(prob=c(0.4,0.4,0)), # Dead - move
-                                      hmmCat(prob=c(0.3,0.25,0.05)))), # Dead -mort-sig
+                  hmodel = list(msm::hmmMV(msm::hmmCat(prob=c(0.5,0.05,0.25)), # Alive - move
+                                      msm::hmmCat(prob=c(0.5,0.05,0.25))), # Alive - mort-sig
+                                msm::hmmMV(msm::hmmCat(prob=c(0.4,0.4,0)), # Dead - move
+                                      msm::hmmCat(prob=c(0.3,0.25,0.05)))), # Dead -mort-sig
                   method="BFGS", control=list(maxit=15000))
   return(fit_mod)
 }

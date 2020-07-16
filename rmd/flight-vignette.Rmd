@@ -165,25 +165,29 @@ flagged_fish <- flag_dead_fish(best_detects, dist_thresh = 0.5)
 head(flagged_fish)
 ```
 
-**hmm_survival** operates similarly to **flag_dead_fish**; however, this function uses a more sophisticated method to determine the living status of the fish. Briefly, this function utilizes locational and mortality sensor related information to determine the most likely path of survival states (called the viterbi path) for each fish using a Hidden Markov Model (HMM). A benefit to using a HMM based approach is that detection probabilities and survival rates are estimated using a statistical approach. A detailed description of the HMM can be found by running vignette("hmm") in the console. 
+**hmm_survival** operates similarly to **flag_dead_fish**; however, this function uses a more sophisticated method to determine the living status of the fish. Briefly, this function utilizes locational and mortality sensor related information to determine the most likely path of survival states (called the viterbi path) for each fish using a Hidden Markov Model (HMM). A benefit to using a HMM based approach is that detection probabilities and survival rates are estimated using a statistical approach. These estimates are based on two key assumptions: 1) dead fish remain dead, and 2) dead fish do not move. A detailed description of the HMM can be found by running vignette("hmm") in the console. 
 
 The following lines of code will fit the HMM to determine the living status of the fish:
 ```{r}
 library(msm)
 hmm_out <- hmm_survival(best_detects)
 hmm_out$results
-head(hmm_out$viterbi)
+viterbi <- hmm_out$viterbi
+head(viterbi)
 ```
 
-In the column *hmm_out\$viterbi\$Viterbi*, a value of 1 cooresponds to the event that the fish is alive whereas 2 cooresponds to the event that the fish has expired. 
+In the column *viterbi\$Viterbi*, a value of 1 cooresponds to the event that the fish is alive whereas 2 cooresponds to the event that the fish has expired. 
 
 #### Step 7 -- Create some pretty pictures
 
 A plotting function (**make_plot**) is included in the telprep package. This function is designed to be used throughout the analysis. Example of how the function can be used are provided here:
 
 ```{r}
-# basic plot
+# plotting all detections
 par(mfrow=c(1,1))
+make_plot(sldf, all_data)
+
+# real detections only
 make_plot(sldf, best_detects)
 
 # darken background
@@ -212,3 +216,24 @@ make_plot(sldf, viterbi, type="bing", darken=2.5, viterbi=T, flight=1)
 make_plot(sldf, viterbi, type="bing", darken=2.5, viterbi=T, flight=3)
 make_plot(sldf, viterbi, type="bing", darken=2.5, viterbi=T, flight=5)
 ```
+
+The function **make_gif** can be used to make dynamic plots (i.e. gifs). The user is referred to the function specific help files for more information; however, a few examples of the types of plots that can be created with these functions is provided below:
+
+Plotting the most likely path of survival states for each fish -- live fish are red while green fish are dead:
+```{r echo=FALSE}
+knitr::include_graphics("S:/Jordy/telprep/telprep/gifs/viterbi/gif.gif")
+```
+
+Giving each fish a unique color that is preserved through flights:
+```{r echo=FALSE}
+knitr::include_graphics("S:/Jordy/telprep/telprep/gifs/byfish/gif.gif")
+```
+
+Finally the function **make_survival_plot** can be used to plot the number of expired fish (as determined by the viterbi path) by flight period:
+```{r}
+make_survival_plot(viterbi)
+```
+
+
+
+

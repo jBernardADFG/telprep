@@ -2,12 +2,15 @@
 #'
 #' @param viterbi output of \code{\link{viterbi}} or \code{\link{hmm_survival}}.
 #' @export
+#' @examples
+#' make_survival_plot(viterbi)
 
-survival.plot <- function(viterbi){
+make_survival_plot <- function(viterbi){
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("Package \"ggplot2\" is needed for this function to work. Please install it.",
          call. = FALSE)
   }
+  library(ggplot2)
   df <- data.frame(rep(NA, length(unique(viterbi$FlightNum))), rep(NA, length(unique(viterbi$FlightNum))), rep(NA, length(unique(viterbi$FlightNum))))
   names(df) <- c("date", "n_alive", "n_dead")
   df[,1]<-rep(viterbi$DateTime[1], length(unique(viterbi$FlightNum)))
