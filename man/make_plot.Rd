@@ -14,7 +14,8 @@ make_plot(
   flight_num = NA,
   channel = NA,
   tag_id = NA,
-  viterbi = F
+  viterbi = F,
+  return_background = F
 )
 }
 \arguments{
@@ -67,7 +68,7 @@ make_plot(sldf, best_detects, channel=10, tag_id=11, darken=2.5)
 
 # to zoom in to a specified extent
 extent <- c(x_min=466060, x_max=1174579, y_min=6835662, y_max=7499016)
-make_plot(sldf, best_detects, extent, darken=2.5)
+temp<-make_plot(sldf, best_detects, extent, darken=2.5)
 
 # plotting live and dead fish by flight period -- green fish have expired
 par(mfrow=c(3,1))

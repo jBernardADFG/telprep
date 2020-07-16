@@ -37,7 +37,7 @@
 #'
 #' # to zoom in to a specified extent
 #' extent <- c(x_min=466060, x_max=1174579, y_min=6835662, y_max=7499016)
-#' make_plot(sldf, best_detects, extent, darken=2.5)
+#' temp<-make_plot(sldf, best_detects, extent, darken=2.5)
 #'
 #' # plotting live and dead fish by flight period -- green fish have expired
 #' par(mfrow=c(3,1))
@@ -47,7 +47,7 @@
 #' make_plot(sldf, viterbi, type="bing", darken=2.5, viterbi=T, flight=5)
 
 
-make_plot <- function(sldf, detects, extent=NA, type="bing", darken=1, col_by_fish=F, flight_num=NA, channel=NA, tag_id=NA, viterbi=F){
+make_plot <- function(sldf, detects, extent=NA, type="bing", darken=1, col_by_fish=F, flight_num=NA, channel=NA, tag_id=NA, viterbi=F, return_background=F){
   open_maps=T
   if (!requireNamespace("sp", quietly = TRUE)) {
     stop("Package \"sp\" is needed for this function to work. Please install it.",
@@ -163,5 +163,8 @@ make_plot <- function(sldf, detects, extent=NA, type="bing", darken=1, col_by_fi
       points(bd$X, bd$Y, pch=plot_sym, col=plot_col_3, cex=0.1)
     }
   }
-  return(background)
+  if (return_background==T){
+    return(background)
+  }
 }
+

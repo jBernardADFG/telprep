@@ -49,5 +49,5 @@ Create a dynamic plot of fish detections
 # Note: Create a folder on your machine and make dir coorespond to this directory to run examples
 # extent <- c(x_min=466060, x_max=1174579, y_min=6835662, y_max=7499016)
 # gif_plot(sldf, viterbi, dir="S:/Jordy/telprep/telprep/gifs/viterbi/", extent=extent, viterbi=T)
-# gif_plot(sldf, best_detects, dir="S:/Jordy/telprep/telprep/gifs/byfish/", extent=extent, col_by_fish=T, viterbi=F)
+# # gif_plot(sldf, best_detects, dir="S:/Jordy/telprep/telprep/gifs/byfish/", extent=extent, col_by_fish=T, viterbi=F)
 }

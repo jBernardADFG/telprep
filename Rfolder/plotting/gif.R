@@ -16,14 +16,14 @@
 #' # Note: Create a folder on your machine and make dir coorespond to this directory to run examples
 #' # extent <- c(x_min=466060, x_max=1174579, y_min=6835662, y_max=7499016)
 #' # gif_plot(sldf, viterbi, dir="S:/Jordy/telprep/telprep/gifs/viterbi/", extent=extent, viterbi=T)
-#' # gif_plot(sldf, best_detects, dir="S:/Jordy/telprep/telprep/gifs/byfish/", extent=extent, col_by_fish=T, viterbi=F)
+#' # # gif_plot(sldf, best_detects, dir="S:/Jordy/telprep/telprep/gifs/byfish/", extent=extent, col_by_fish=T, viterbi=F)
 
 gif_plot <- function(sldf, detects, dir = "D:/Jordy/myplots/", extent=NA, type="bing", darken=2.5, col_by_fish=F, viterbi=F, width = 1024, height=768, fps = fps){
   par(mfrow=c(1,1))
   n_flights <- length(unique(detects$FlightNum))
   files <- rep(NA,n_flights)
   for (i in 1:n_flights){
-    base_map <- make_plot(sldf, detects, flight=i, extent=extent, type=type, darken=darken, col_by_fish=col_by_fish, viterbi=viterbi)
+    base_map <- make_plot(sldf, detects, flight=i, extent=extent, type=type, darken=darken, col_by_fish=col_by_fish, viterbi=viterbi, return_background=T)
     x_min <- base_map$bbox$p1[1]
     x_max <- base_map$bbox$p2[1]
     y_min <- base_map$bbox$p2[2]
