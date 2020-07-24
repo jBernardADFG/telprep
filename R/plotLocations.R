@@ -97,7 +97,7 @@ make_plot <- function(sldf, detects, extent=NA, open_maps=T, type="bing", darken
   }else{
     n_sldf <- sp::spTransform(sldf, suppressWarnings(CRS("+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs")))
 
-    plot(raster::crop(n_sldf,raster::extent(n_sldf)), main="")
+    raster::plot(raster::crop(n_sldf,raster::extent(n_sldf)), main="")
     rect(n_sldf@bbox[1,1],n_sldf@bbox[2,1],n_sldf@bbox[1,2],n_sldf@bbox[2,2], col = "black")
   }
   if (is.null(detects$FlightNum)){

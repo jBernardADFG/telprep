@@ -8,6 +8,7 @@ make_plot(
   sldf,
   detects,
   extent = NA,
+  open_maps = T,
   type = "bing",
   darken = 1,
   col_by_fish = F,
@@ -25,7 +26,9 @@ make_plot(
 
 \item{extent}{A vector of length four specifying the plotting extent c(x_min, x_max, y_min, y_max)}
 
-\item{type}{The background to use (see \code{\link[OpenStreetMap]{openmap}}) for more information.}
+\item{open_maps}{If open_maps=T, a background will be plotted using (\code{\link[OpenStreetMap]{openmap}}). If open_maps=F, a black background will be used.}
+
+\item{type}{The background to use (see \code{\link[OpenStreetMap]{openmap}}) for more information. Argument is ignored if open_maps=F.}
 
 \item{darken}{Increase to darken the background when open_maps=T. Defaults to 1.}
 
@@ -55,6 +58,9 @@ make_plot(sldf, best_detects, darken=2.5)
 
 # change style of background
 make_plot(sldf, best_detects, type="esri-topo")
+
+# remove background -- can be useful if OpenStreetMap is unavailable on your machine
+make_plot(sldf, best_detects, open_maps=F)
 
 # give each fish a unique color preserved through flights -- unfortunately there are only so many colors
 par(mfrow=c(3,1))
